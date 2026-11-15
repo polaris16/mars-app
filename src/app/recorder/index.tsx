@@ -215,8 +215,6 @@ function RecordingSheet({
   seconds,
   waveHeights,
   onClose,
-  onPauseResume,
-  onRestart,
   onStop,
 }: {
   visible: boolean;
@@ -224,8 +222,6 @@ function RecordingSheet({
   seconds: number;
   waveHeights: number[];
   onClose: () => void;
-  onPauseResume: () => void;
-  onRestart: () => void;
   onStop: () => void;
 }) {
   return (
@@ -239,7 +235,7 @@ function RecordingSheet({
       <View className="flex-1 justify-end">
         {/* 背景遮罩 */}
         <Pressable
-          className="absolute inset-0 bg-black/40"
+          className="absolute inset-0 bg-black/40" 
           onPress={onClose}
         />
 
@@ -332,48 +328,21 @@ function RecordingSheet({
             </View>
           </View>
 
-          {/* 操作按钮 */}
-          <View className="mt-7 flex-row items-center gap-3">
-            <Pressable
-              onPress={onRestart}
-              className="h-12 w-12 items-center justify-center rounded-full border border-border bg-background active:bg-muted"
-            >
-              <Ionicons
-                name="refresh"
-                size={21}
-                color="#171717"
-              />
-            </Pressable>
-
-            <Pressable
-              onPress={onPauseResume}
-              className="h-[52px] flex-1 flex-row items-center justify-center gap-2 rounded-full bg-neutral-900 active:bg-neutral-700"
-            >
-              <Ionicons
-                name={isRecording ? 'pause' : 'mic'}
-                size={19}
-                color="#FFFFFF"
-              />
-
-              <Text className="text-sm font-semibold text-white">
-                {isRecording ? '暂停录音' : '继续录音'}
-              </Text>
-            </Pressable>
-
+          {/* 主操作按钮 */}
+          <View className="mt-7 w-full">
             <Pressable
               onPress={onStop}
-              className="h-12 w-12 items-center justify-center rounded-full bg-red-600 active:opacity-70"
+              className="h-[52px] w-full flex-row items-center justify-center gap-2 rounded-full bg-neutral-900 active:bg-neutral-700"
             >
-              <Ionicons
-                name="stop"
-                size={20}
-                color="#FFFFFF"
-              />
+              <View className="h-3.5 w-3.5 rounded-sm bg-white" />
+              <Text className="text-sm font-semibold text-white">
+                停止录音
+              </Text>
             </Pressable>
           </View>
 
           <Text className="mt-3 text-center text-xs" style={{ color: '#4B5563' }}>
-            可暂停、继续或重录，完成后保存音频
+            录音结束后将自动保存到列表中
           </Text>
         </View>
       </View>
@@ -811,8 +780,6 @@ export default function RecordingPage() {
           seconds={seconds}
           waveHeights={waveHeights}
           onClose={() => setSheetVisible(false)}
-          onPauseResume={pauseResumeRecording}
-          onRestart={restartRecording}
           onStop={stopRecording}
         />
 
