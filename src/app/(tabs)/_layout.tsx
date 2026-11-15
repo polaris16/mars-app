@@ -1,6 +1,11 @@
-import React from 'react';
-import { Tabs } from 'expo-router';
+
 import { Ionicons } from '@expo/vector-icons';
+import { Tabs } from 'expo-router';
+
+const ACTIVE_COLOR = '#171717';
+const INACTIVE_COLOR = '#737373';
+const TAB_BACKGROUND = '#FFFFFF';
+const BORDER_COLOR = '#E5E5E5';
 
 export default function TabLayout() {
   return (
@@ -8,20 +13,32 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
 
-        tabBarActiveTintColor: '#2563EB',
-        tabBarInactiveTintColor: '#94A3B8',
+        sceneContainerStyle: {
+          backgroundColor: '#F9F9FF',
+        },
+
+        tabBarActiveTintColor: ACTIVE_COLOR,
+        tabBarInactiveTintColor: INACTIVE_COLOR,
 
         tabBarStyle: {
-          height: 62,
-          paddingTop: 6,
+          height: 64,
+          paddingTop: 7,
           paddingBottom: 8,
-          backgroundColor: '#FFFFFF',
-          borderTopColor: '#E5E7EB',
+          backgroundColor: TAB_BACKGROUND,
+          borderTopWidth: 1,
+          borderTopColor: BORDER_COLOR,
+          elevation: 0,
+          shadowOpacity: 0,
         },
 
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '500',
+          marginTop: 2,
+        },
+
+        tabBarItemStyle: {
+          paddingVertical: 0,
         },
       }}
     >
@@ -29,11 +46,11 @@ export default function TabLayout() {
         name="index"
         options={{
           title: '首页',
-          tabBarIcon: ({ focused }) => (
+          tabBarIcon: ({ focused, color }) => (
             <Ionicons
               name={focused ? 'home' : 'home-outline'}
               size={22}
-              color={String(focused ? '#2563EB' : '#94A3B8') as any}
+              color={color}
             />
           ),
         }}
@@ -43,11 +60,11 @@ export default function TabLayout() {
         name="discover"
         options={{
           title: '发现',
-          tabBarIcon: ({ focused }) => (
+          tabBarIcon: ({ focused, color }) => (
             <Ionicons
               name={focused ? 'compass' : 'compass-outline'}
               size={22}
-              color={String(focused ? '#2563EB' : '#94A3B8') as any}
+              color={color}
             />
           ),
         }}
@@ -57,11 +74,11 @@ export default function TabLayout() {
         name="message"
         options={{
           title: '消息',
-          tabBarIcon: ({ focused }) => (
+          tabBarIcon: ({ focused, color }) => (
             <Ionicons
               name={focused ? 'chatbubbles' : 'chatbubbles-outline'}
               size={22}
-              color={String(focused ? '#2563EB' : '#94A3B8') as any}
+              color={color}
             />
           ),
         }}
@@ -71,11 +88,11 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: '我的',
-          tabBarIcon: ({ focused }) => (
+          tabBarIcon: ({ focused, color }) => (
             <Ionicons
               name={focused ? 'person' : 'person-outline'}
               size={22}
-              color={String(focused ? '#2563EB' : '#94A3B8') as any}
+              color={color}
             />
           ),
         }}
