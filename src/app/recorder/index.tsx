@@ -235,8 +235,8 @@ function RecordingSheet({
       <View className="flex-1 justify-end">
         {/* 背景遮罩 */}
         <Pressable
-          className="absolute inset-0 bg-black/40" 
-          onPress={onClose}
+          className="absolute inset-0 bg-black/40"
+          pointerEvents="none"
         />
 
         {/* 弹层主体 */}
@@ -245,12 +245,9 @@ function RecordingSheet({
           style={{ borderColor: '#E5E7EB' }}
         >
           {/* 拖动指示条 */}
-          <Pressable
-            onPress={onClose}
-            className="h-3 w-full items-center justify-center"
-          >
+          <View className="h-3 w-full items-center justify-center">
             <View className="h-1 w-10 rounded-full bg-neutral-300" />
-          </Pressable>
+          </View>
 
           {/* 状态栏 */}
           <View className="mt-4 w-full flex-row items-center justify-between">
@@ -269,16 +266,13 @@ function RecordingSheet({
               </Text>
             </View>
 
-            <Pressable
-              onPress={onClose}
-              className="h-8 w-8 items-center justify-center rounded-full"
-            >
+            <View className="h-8 w-8 items-center justify-center rounded-full">
               <Ionicons
                 name="chevron-down"
                 size={23}
                 color="#737373"
               />
-            </Pressable>
+            </View>
           </View>
 
           {/* 计时器 */}
