@@ -594,7 +594,21 @@ export default function RecordingPage() {
       return;
     }
 
-    // 在此接入下一步业务页面
+    const recording = recordings[0];
+    if (!recording) {
+      Alert.alert('暂无录音', '请先完成一段录音，再继续发布。');
+      return;
+    }
+
+    router.push({
+      pathname: '/recorder/publish',
+      params: {
+        topic,
+        recordingUri: recording.uri,
+        duration: recording.duration,
+        recordingId: recording.id,
+      },
+    });
   };
 
   // 中央录音按钮

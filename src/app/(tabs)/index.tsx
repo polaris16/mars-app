@@ -2,13 +2,13 @@
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 
+import { Ionicons } from '@expo/vector-icons';
 import {
   Pressable,
   ScrollView,
   Text,
   View,
 } from 'react-native';
-
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface TopicItem {
@@ -215,9 +215,7 @@ export default function HomeScreen() {
               className="h-14 w-14 items-center justify-center rounded-full border border-[#404040] bg-[#171717] shadow-lg"
               style={{ transform: [{ scale: 0.95 }] }}
             >
-              <Text className="text-2xl text-white">
-                🎙
-              </Text>
+              <Ionicons name="mic-outline" size={22} color="#ffffff" />
             </Pressable>
           </View>
 
