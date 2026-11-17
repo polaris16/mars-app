@@ -15,7 +15,9 @@ async function request<T>(path: string, method: string, body?: unknown, options:
     ...options.headers,
   };
 
-  if (token) {
+  if (options.headers?.Authorization) {
+    headers.Authorization = options.headers.Authorization;
+  } else if (token) {
     headers.Authorization = `Bearer ${token}`;
   } else {
     delete headers.Authorization;
