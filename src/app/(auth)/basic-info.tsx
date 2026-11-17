@@ -18,6 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ButtonText } from '@/components/ui/button';
 import { CalendarDaysIcon, CameraIcon, Icon } from '@/components/ui/icon';
 import { useAuth } from '@/store/AuthContext';
+import { updateMyProfile } from '@/services/userService';
 
 type Gender = 'male' | 'female';
 
@@ -145,7 +146,7 @@ export default function BasicInfoScreen() {
   }
 
   // 提交资料
-  function handleNextStep() {
+  async function handleNextStep() {
     if (submitting) return;
 
     if (!validateForm()) {
@@ -154,6 +155,12 @@ export default function BasicInfoScreen() {
 
     try {
       setSubmitting(true);
+
+      await updateMyProfile({
+        display_name: nickname.trim(),
+        sex: gender === 'male' ? 1 : 2,
+        birth_date: formatDate(birthday!),
+      });
 
       completeBasicInfo({
         nickname: nickname.trim(),
@@ -165,7 +172,7 @@ export default function BasicInfoScreen() {
       router.replace('/(auth)/interests');
     } catch (error) {
       console.error('保存基础资料失败:', error);
-      Alert.alert('保存失败', '请稍后重试。');
+      Alert.alert('保存失败', error instanceof Error ? error.message : '请稍后重试。');
       setSubmitting(false);
     }
   }

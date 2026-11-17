@@ -36,6 +36,25 @@ export interface SendCodeResponse {
   expires_in: number;
 }
 
+export interface UpdateMyProfileRequest {
+  display_name: string;
+  sex: 1 | 2;
+  birth_date: string;
+  /** Omit until the avatar upload endpoint is available. */
+  avatar_url?: string;
+}
+
+export interface InterestOption {
+  id: number;
+  code: string;
+  name: string;
+  sort_order: number;
+}
+
+export interface UpdateUserInterestsRequest {
+  interest_ids: number[];
+}
+
 export interface LoginResponseUser {
   id: number;
   display_name: string | null;
