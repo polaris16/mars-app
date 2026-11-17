@@ -1,4 +1,5 @@
 import { useAuth } from '@/store/AuthContext';
+import { loginWithPhoneCode, sendPhoneCode } from '@/services/authService';
 import { router } from 'expo-router';
 
 import { useEffect, useRef, useState } from 'react';
@@ -12,8 +13,6 @@ import { ArrowRightIcon, CheckIcon, CloseCircleIcon, HelpCircleIcon, Icon } from
 import { Input, InputField } from '@/components/ui/input';
 import { Modal, ModalBackdrop, ModalBody, ModalContent, ModalFooter, ModalHeader } from '@/components/ui/modal';
 
-const DEMO_CODE = '123456';
-const RESEND_SECONDS = 60;
 const CODE_LENGTH = 6;
 const POLICIES = ['用户协议', '隐私政策', '登录政策'] as const;
 type Feedback = { message: string; field?: 'phone' | 'code' | 'agreement'; error?: boolean };
@@ -25,8 +24,8 @@ export default function LoginScreen() {
   const [code, setCode] = useState('');
   const [agreed, setAgreed] = useState(false);
   const [requestedPhone, setRequestedPhone] = useState('');
-  const [resendAt, setResendAt] = useState(0);
   const [secondsLeft, setSecondsLeft] = useState(0);
+  const [sendingCode, setSendingCode] = useState(false);
   const [feedback, setFeedback] = useState<Feedback>();
   const [dialog, setDialog] = useState<{ title: string; message: string }>();
   const { login } = useAuth();
@@ -35,17 +34,13 @@ export default function LoginScreen() {
   const phoneValid = /^1[3-9]\d{9}$/.test(phone);
   const codeRequested = phone === requestedPhone && phoneValid;
 
-
-
   useEffect(() => {
-    if (!resendAt) return;
-    const timer = setInterval(() => {
-      const remaining = Math.max(0, Math.ceil((resendAt - Date.now()) / 1000));
-      setSecondsLeft(remaining);
-      if (remaining === 0) clearInterval(timer);
+    if (secondsLeft <= 0) return;
+    const timer = setTimeout(() => {
+      setSecondsLeft(current => Math.max(current - 1, 0));
     }, 1000);
-    return () => clearInterval(timer);
-  }, [resendAt]);
+    return () => clearTimeout(timer);
+  }, [secondsLeft]);
 
   function validatePhone() {
     if (phoneValid) return true;
@@ -54,14 +49,26 @@ export default function LoginScreen() {
     return false;
   }
 
-  function requestCode() {
-    if (!validatePhone() || Date.now() < resendAt) return;
-    setRequestedPhone(phone);
-    setResendAt(Date.now() + RESEND_SECONDS * 1000);
-    setSecondsLeft(RESEND_SECONDS);
-    setCode('');
-    setFeedback({ message: `演示验证码为 ${DEMO_CODE}，暂不发送真实短信` });
-    codeInput.current?.focus();
+  async function requestCode() {
+    if (!validatePhone() || sendingCode || secondsLeft > 0) return;
+    try {
+      setSendingCode(true);
+      setFeedback(undefined);
+      const response = await sendPhoneCode({ phone });
+      setRequestedPhone(phone);
+      setCode('');
+      setSecondsLeft(response.expires_in);
+      setFeedback({ message: response.message });
+      codeInput.current?.focus();
+    } catch (error) {
+      setFeedback({
+        message: error instanceof Error ? error.message : '验证码发送失败，请稍后重试',
+        field: 'code',
+        error: true,
+      });
+    } finally {
+      setSendingCode(false);
+    }
   }
 
   async function submit() {
@@ -94,64 +101,32 @@ export default function LoginScreen() {
       return;
     }
 
-    // 4. 验证验证码
-    if (code !== DEMO_CODE) {
-      setFeedback({
-        message: '验证码不正确，请重新输入',
-        field: 'code',
-        error: true,
-      });
-
-      codeInput.current?.focus();
-      return;
-    }
-
     try {
       Keyboard.dismiss();
       setSubmitting(true);
       setFeedback(undefined);
 
-      // 5. 模拟网络请求延迟
-      await new Promise(resolve => setTimeout(resolve, 800));
-
-      // 6. 模拟后端返回登录数据
-      const session = {
-        token: `mock-token-${phone}`,
-
+      const response = await loginWithPhoneCode({ phone, code });
+      await login({
+        token: response.access_token,
         user: {
-          id: `user-${phone}`,
-          nickname: `用户${phone.slice(-4)}`,
-          avatar: '',
-          profileCompleted: false,
-          interestsCompleted: false,
+          id: String(response.user.id),
+          nickname: response.user.display_name ?? `用户${phone.slice(-4)}`,
+          avatar: response.user.avatar_url ?? '',
+          profileCompleted: response.onboarding_completed,
+          interestsCompleted: response.onboarding_completed,
           interests: [],
         },
+        roles: [],
+      });
 
-        roles: [
-          {
-            id: 'role_001',
-            name: '管理员',
-            description: '系统管理与用户管理',
-          },
-          {
-            id: 'role_002',
-            name: '普通用户',
-            description: '使用应用的基础功能',
-          },
-        ],
-      };
-
-      // 7. 保存登录状态
-      await login(session);
-
-      // 8. 进入首次登录资料完善页面
-      router.replace('/(auth)/basic-info');
+      router.replace(response.onboarding_completed ? '/(tabs)' : '/(auth)/basic-info');
 
     } catch (error) {
-      console.error('Mock 登录失败:', error);
+      console.error('登录失败:', error);
 
       setFeedback({
-        message: '登录失败，请稍后重试',
+        message: error instanceof Error ? error.message : '登录失败，请稍后重试',
         error: true,
       });
     } finally {
@@ -162,13 +137,15 @@ export default function LoginScreen() {
   function showHelp() {
     setDialog({
       title: '登录帮助',
-      message: '请确认手机号码填写正确，并检查短信是否被拦截。如未收到验证码，可在倒计时结束后重新获取。\n\n当前为演示模式，不会发送真实短信。获取验证码后，输入 123456 可体验验证流程。',
+      message: '请确认手机号码填写正确后获取短信验证码。如未收到，请检查短信拦截设置，并在倒计时结束后重试。',
     });
   }
 
   function changePhone(value: string) {
     setPhone(value.replace(/\D/g, '').slice(0, 11));
     setCode('');
+    setRequestedPhone('');
+    setSecondsLeft(0);
     setFeedback(undefined);
   }
 
@@ -252,8 +229,8 @@ export default function LoginScreen() {
                       placeholder="请输入6位验证码"
                       value={code}
                     />
-                    <Button className="min-h-8 shrink-0 rounded-md px-3 py-1.5" isDisabled={secondsLeft > 0} onPress={requestCode} variant="secondary" hitSlop={{ top: 6, bottom: 6 }}>
-                      <ButtonText className="text-xs font-medium leading-4">{secondsLeft > 0 ? `${secondsLeft}s 后重新发送` : '获取验证码'}</ButtonText>
+                    <Button className="min-h-8 shrink-0 rounded-md px-3 py-1.5" isDisabled={sendingCode || secondsLeft > 0} onPress={requestCode} variant="secondary" hitSlop={{ top: 6, bottom: 6 }}>
+                      <ButtonText className="text-xs font-medium leading-4">{sendingCode ? '发送中...' : secondsLeft > 0 ? `${secondsLeft}s 后重试` : '获取验证码'}</ButtonText>
                     </Button>
                   </Input>
                 </View>

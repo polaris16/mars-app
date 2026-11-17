@@ -8,40 +8,13 @@ import React, {
 } from 'react';
 
 import * as SecureStore from 'expo-secure-store';
+import type { LoginSession, User, UserRole } from '@/types/user';
+
+export type { LoginSession, User, UserRole } from '@/types/user';
 
 // ================================
 // 1. 类型定义
 // ================================
-
-export interface UserRole {
-  id: string;
-  name: string;
-  description?: string;
-}
-
-export interface User {
-  id: string;
-  nickname: string;
-  avatar?: string;
-
-  gender?: 'male' | 'female';
-  birthday?: string;
-
-  // 基础资料完成状态
-  profileCompleted: boolean;
-
-  // 兴趣标签完成状态
-  interestsCompleted: boolean;
-
-  // 兴趣标签
-  interests?: string[];
-}
-
-export interface LoginSession {
-  token: string;
-  user: User;
-  roles: UserRole[];
-}
 
 interface AuthContextType {
   // 初始化状态
