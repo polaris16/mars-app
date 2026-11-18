@@ -1,9 +1,5 @@
-import { View, Text } from 'react-native';
+import { GlassEmptyTab } from '@/components/glass-empty-tab';
 
 export default function MessageScreen() {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>消息</Text>
-    </View>
-  );
+  return <GlassEmptyTab title="消息" subtitle="每一次回应，都值得期待" icon="chatbubbles-outline" message="暂时还没有消息" />;
 }

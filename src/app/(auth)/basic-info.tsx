@@ -1,3 +1,4 @@
+import { GlassScreen, GlassSurface, GlassPressable } from '@/components/glass-surface';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
@@ -178,7 +179,7 @@ export default function BasicInfoScreen() {
   }
 
   return (
-    <View className="flex-1 bg-background" style={{ flex: 1 }}>
+    <GlassScreen style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
       <SafeAreaView style={{ flex: 1 }}>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
@@ -211,13 +212,13 @@ export default function BasicInfoScreen() {
 
               {/* 头像上传 */}
               <View className="mb-8 items-center">
-                <Pressable
+                <GlassPressable
                   accessibilityRole="button"
                   accessibilityLabel="选择个人头像"
                   onPress={handleChooseAvatar}
-                  className="relative"
+                  className="relative" surfaceStyle={{ borderRadius: 48 }}
                 >
-                  <View className="h-24 w-24 items-center justify-center overflow-hidden rounded-full border border-border bg-background">
+                  <View className="h-24 w-24 items-center justify-center overflow-hidden rounded-full border border-border bg-transparent">
                     {avatar ? (
                       <Image
                         source={{ uri: avatar }}
@@ -238,7 +239,7 @@ export default function BasicInfoScreen() {
                       className="text-background"
                     />
                   </View>
-                </Pressable>
+                </GlassPressable>
 
                 <Text className="mt-3 text-sm font-semibold text-foreground">
                   点击上传真实头像
@@ -250,7 +251,7 @@ export default function BasicInfoScreen() {
               </View>
 
               {/* 表单 */}
-              <View className="gap-5">
+              <GlassSurface className="gap-5 p-5">
                 {/* 昵称 */}
                 <View className="gap-2">
                   <View className="flex-row items-center justify-between">
@@ -416,11 +417,11 @@ export default function BasicInfoScreen() {
                     </Pressable>
                   )}
                 </View>
-              </View>
+              </GlassSurface>
             </ScrollView>
 
             {/* 底部按钮 */}
-            <View className="px-5 pb-5 pt-3">
+            <GlassSurface className="p-3" style={{ marginHorizontal: 16, marginBottom: 12, borderRadius: 38 }}>
               <Button
                 className="h-[52px] w-full rounded-full bg-[#171717]"
                 onPress={handleNextStep}
@@ -430,10 +431,10 @@ export default function BasicInfoScreen() {
                   {submitting ? '保存中...' : '下一步 →'}
                 </ButtonText>
               </Button>
-            </View>
+            </GlassSurface>
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </View>
+    </GlassScreen>
   );
 }

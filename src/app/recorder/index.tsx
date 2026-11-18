@@ -1,3 +1,4 @@
+import { GlassBackdrop, GlassSurface, GlassPressable } from '@/components/glass-surface';
 
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -117,7 +118,7 @@ function RecordingCard({
   playing: boolean;
 }) {
   return (
-    <View className="w-full rounded-xl border bg-[#F9F9FF] p-4 shadow-sm" style={{ borderColor: '#E5E7EB' }}>
+    <GlassSurface className="w-full p-5" style={{ borderRadius: 24 }}>
       {/* 标题区域 */}
       <View className="flex-row items-start gap-2">
         <View className="min-w-0 flex-1 gap-1">
@@ -161,7 +162,8 @@ function RecordingCard({
 
         <Pressable
           onPress={onMore}
-          className="h-8 w-8 shrink-0 items-center justify-center rounded-full active:bg-muted"
+          accessibilityLabel="更多录音操作"
+          className="h-11 w-11 shrink-0 items-center justify-center rounded-full active:bg-muted"
           hitSlop={8}
         >
           <Ionicons
@@ -176,7 +178,8 @@ function RecordingCard({
       <View className="mt-3 flex-row items-center gap-3 border-t pt-3" style={{ borderTopColor: '#E5E7EB' }}>
         <Pressable
           onPress={onPlay}
-          className="h-8 w-8 items-center justify-center rounded-full active:opacity-60"
+          accessibilityLabel={playing ? '暂停播放' : '播放录音'}
+          className="h-11 w-11 items-center justify-center rounded-full active:opacity-60"
           style={{ backgroundColor: '#F3F4F6' }}
         >
           <Ionicons
@@ -192,7 +195,8 @@ function RecordingCard({
 
         <Pressable
           onPress={onShare}
-          className="h-8 w-8 items-center justify-center active:opacity-60"
+          accessibilityLabel="分享录音"
+          className="h-11 w-11 items-center justify-center active:opacity-60"
         >
           <Ionicons
             name="share-outline"
@@ -201,7 +205,7 @@ function RecordingCard({
           />
         </Pressable>
       </View>
-    </View>
+    </GlassSurface>
   );
 }
 
@@ -240,9 +244,9 @@ function RecordingSheet({
         />
 
         {/* 弹层主体 */}
-        <View
-          className="w-full rounded-t-[28px] border border-b-0 bg-[#F9F9FF] px-6 pb-8 pt-3"
-          style={{ borderColor: '#E5E7EB' }}
+        <GlassSurface
+          className="w-full px-6 pb-8 pt-3"
+          style={{ borderRadius: 0, borderTopLeftRadius: 32, borderTopRightRadius: 32 }}
         >
           {/* 拖动指示条 */}
           <View className="h-3 w-full items-center justify-center">
@@ -338,7 +342,7 @@ function RecordingSheet({
           <Text className="mt-3 text-center text-xs" style={{ color: '#4B5563' }}>
             录音结束后将自动保存到列表中
           </Text>
-        </View>
+        </GlassSurface>
       </View>
     </Modal>
   );
@@ -629,16 +633,16 @@ export default function RecordingPage() {
     >
       <StatusBar
         barStyle="dark-content"
-        backgroundColor="#F9F9FF"
       />
 
       <View style={{ flex: 1, backgroundColor: '#F9F9FF' }}>
+        <GlassBackdrop />
 
         {/* ================================= */}
         {/* 顶部导航 */}
         {/* ================================= */}
 
-        <View className="h-16 flex-row items-center justify-between px-2">
+        <View className="h-16 flex-row items-center justify-between px-4">
           <Pressable
             onPress={handleBack}
             className="h-11 w-11 items-center justify-center active:opacity-60"
@@ -670,11 +674,11 @@ export default function RecordingPage() {
         {/* 页面主体 */}
         {/* ================================= */}
 
-        <View style={{ flex: 1, backgroundColor: '#F9F9FF', paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 }}>
+        <View style={{ flex: 1, paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 }}>
 
           {/* 已完成录音列表 */}
           <ScrollView
-            style={{ flex: 1, backgroundColor: '#F9F9FF' }}
+            style={{ flex: 1 }}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{
               flexGrow: 1,
@@ -714,9 +718,9 @@ export default function RecordingPage() {
 
               {/* 空状态 */}
               {recordings.length === 0 && (
-                <View
-                  className="items-center justify-center rounded-xl border py-10"
-                  style={{ backgroundColor: '#F9F9FF', borderColor: '#E5E7EB' }}
+                <GlassSurface
+                  className="items-center justify-center px-5 py-12"
+                  style={{ borderRadius: 28 }}
                 >
                   <View className="mb-4 h-16 w-16 items-center justify-center rounded-full bg-muted">
                     <Ionicons
@@ -730,10 +734,10 @@ export default function RecordingPage() {
                     暂无录音
                   </Text>
 
-                  <Text className="mt-2 text-xs" style={{ color: '#4B5563' }}>
+                  <Text className="mt-2 text-center text-xs leading-5" style={{ color: '#4B5563' }}>
                     随心记录灵感、对话与心声，支持自动生成文字与智能降噪
                   </Text>
-                </View>
+                </GlassSurface>
               )}
             </View>
           </ScrollView>
@@ -742,21 +746,22 @@ export default function RecordingPage() {
           {/* 底部录音控制区 */}
           {/* ================================= */}
 
-          <View className="items-center justify-center gap-4 pb-4 pt-3" style={{ backgroundColor: '#F9F9FF' }}>
+          <View className="items-center justify-center gap-4 pb-4 pt-3">
 
             {/* 主录音按钮 */}
             <View className="h-24 w-full items-center justify-center">
-              <Pressable
+              <GlassPressable
                 onPress={handleMasterButton}
-                className="h-20 w-20 items-center justify-center rounded-full bg-neutral-900 shadow-md"
-                style={{ transform: [{ scale: 0.95 }] }}
+                tone="dark" accessibilityLabel={isRecording ? '停止并保存录音' : '开始录音'}
+                surfaceClassName="h-20 w-20 items-center justify-center"
+                surfaceStyle={{ borderRadius: 40 }}
               >
                 <Ionicons
                   name={isRecording ? 'stop' : 'mic'}
                   size={34}
                   color="#FFFFFF"
                 />
-              </Pressable>
+              </GlassPressable>
             </View>
 
             {/* 提示文字 */}

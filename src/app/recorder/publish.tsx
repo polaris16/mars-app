@@ -1,3 +1,4 @@
+import { GlassBackdrop, GlassSurface, GlassPressable } from '@/components/glass-surface';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -12,7 +13,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { saveRecording } from './recording-data';
+import { saveRecording } from '@/services/recording-data';
 
 type MediaItem = ImagePicker.ImagePickerAsset & { localId: string };
 
@@ -70,6 +71,7 @@ export default function AudioPublishPage() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F9F9FF' }} edges={['top', 'bottom']}>
+      <GlassBackdrop />
       <StatusBar barStyle="dark-content" />
 
       <View style={{ height: 64, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8 }}>
@@ -98,7 +100,7 @@ export default function AudioPublishPage() {
           </View>
 
           {media.length === 0 ? (
-            <View style={{ alignItems: 'center', borderRadius: 16, borderWidth: 1, borderStyle: 'dashed', borderColor: '#E5E5E5', backgroundColor: '#FFFFFF', paddingHorizontal: 20, paddingVertical: 36 }}>
+            <GlassSurface style={{ alignItems: 'center', borderRadius: 28, paddingHorizontal: 20, paddingVertical: 36 }}>
               <View style={{ marginBottom: 16, height: 64, width: 64, alignItems: 'center', justifyContent: 'center', borderRadius: 32, borderWidth: 1, borderColor: '#EBEBEB', backgroundColor: '#FAFAFA' }}>
                 <Ionicons name="images-outline" size={27} color="#171717" />
                 <View style={{ position: 'absolute', right: -2, top: -2, height: 20, width: 20, alignItems: 'center', justifyContent: 'center', borderRadius: 10, backgroundColor: '#171717' }}><Ionicons name="add" size={14} color="white" /></View>
@@ -112,7 +114,7 @@ export default function AudioPublishPage() {
                 <Ionicons name="shield-checkmark-outline" size={15} color="#A3A3A3" />
                 <Text style={{ fontSize: 12, color: '#737373' }}>最多可添加 9 项 · 支持 JPG / PNG / MP4</Text>
               </View>
-            </View>
+            </GlassSurface>
           ) : (
             <View className="flex-row flex-wrap gap-2.5">
               {media.map(item => (
@@ -127,17 +129,17 @@ export default function AudioPublishPage() {
             </View>
           )}
 
-          <View style={{ marginTop: 24, borderRadius: 12, borderWidth: 1, borderColor: '#E5E7EB', backgroundColor: '#FFFFFF', padding: 16 }}>
+          <GlassSurface style={{ marginTop: 24, borderRadius: 24, padding: 16 }}>
             <View style={{ marginBottom: 8, flexDirection: 'row', alignItems: 'center', gap: 8 }}><Ionicons name="musical-notes-outline" size={17} color="#525252" /><Text style={{ fontSize: 14, fontWeight: '600', color: '#181C22' }}>音频记录</Text></View>
             <Text numberOfLines={1} style={{ fontSize: 13, color: '#737373' }}>{topic}{duration ? ` · ${duration}` : ''}</Text>
             {!recordingUri && <Text style={{ marginTop: 4, fontSize: 12, color: '#A3A3A3' }}>尚未保存录音文件</Text>}
-          </View>
+          </GlassSurface>
         </ScrollView>
 
         <View style={{ flexShrink: 0, paddingTop: 8 }}>
-          <Pressable onPress={finish} className="h-[52px] flex-row items-center justify-center gap-2 rounded-full bg-neutral-900 active:opacity-80" style={{ shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 10, elevation: 3 }}>
+          <GlassPressable onPress={finish} tone="dark" surfaceClassName="h-[52px] flex-row items-center justify-center gap-2" surfaceStyle={{ borderRadius: 28 }}>
             <Text className="text-[15px] font-semibold text-white">完成</Text><Ionicons name="arrow-forward" size={18} color="white" />
-          </Pressable>
+          </GlassPressable>
         </View>
       </View>
     </SafeAreaView>

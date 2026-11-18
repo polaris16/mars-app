@@ -1,3 +1,4 @@
+import { GlassBackdrop, GlassSurface } from '@/components/glass-surface';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
@@ -11,7 +12,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getRecordings, renameRecording, type SavedRecording } from './recording-data';
+import { getRecordings, renameRecording, type SavedRecording } from '@/services/recording-data';
 
 export default function RecordingListPage() {
   const router = useRouter();
@@ -38,6 +39,7 @@ export default function RecordingListPage() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#FBF9F9' }} edges={['top', 'bottom']}>
+      <GlassBackdrop />
       <StatusBar barStyle="dark-content" />
       <View style={{ height: 56, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12 }}>
         <Pressable onPress={() => router.back()} accessibilityLabel="返回" style={{ width: 40, height: 40, alignItems: 'center', justifyContent: 'center' }}>
@@ -56,8 +58,9 @@ export default function RecordingListPage() {
           <Pressable
             key={recording.id}
             onPress={() => router.push({ pathname: '/recorder', params: { topic: recording.title, recordingId: recording.id } })}
-            style={{ marginBottom: 12, borderRadius: 12, backgroundColor: '#FFFFFF', padding: 16, shadowColor: '#000000', shadowOpacity: 0.04, shadowRadius: 5, elevation: 1 }}
+            style={{ marginBottom: 12 }}
           >
+            <GlassSurface style={{ padding: 20, borderRadius: 24 }}>
             <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
               <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -70,20 +73,21 @@ export default function RecordingListPage() {
                 <Ionicons name="ellipsis-horizontal" size={20} color="#747878" />
               </Pressable>
             </View>
+            </GlassSurface>
           </Pressable>
         ))}
       </ScrollView>
 
       <Modal visible={Boolean(editing)} transparent animationType="fade" onRequestClose={() => setEditing(null)}>
         <View style={{ flex: 1, justifyContent: 'center', padding: 28, backgroundColor: 'rgba(0,0,0,0.38)' }}>
-          <View style={{ borderRadius: 18, backgroundColor: '#FFFFFF', padding: 20 }}>
+          <GlassSurface style={{ borderRadius: 28, padding: 24 }}>
             <Text style={{ marginBottom: 14, fontSize: 17, fontWeight: '700', color: '#1B1C1C' }}>重命名录音</Text>
             <TextInput value={title} onChangeText={setTitle} autoFocus selectTextOnFocus maxLength={60} returnKeyType="done" onSubmitEditing={commitRename} style={{ borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 15, color: '#1B1C1C' }} />
             <View style={{ marginTop: 18, flexDirection: 'row', justifyContent: 'flex-end', gap: 10 }}>
               <Pressable onPress={() => setEditing(null)} style={{ paddingHorizontal: 14, paddingVertical: 10 }}><Text style={{ color: '#737373' }}>取消</Text></Pressable>
               <Pressable onPress={commitRename} style={{ borderRadius: 999, backgroundColor: '#171717', paddingHorizontal: 18, paddingVertical: 10 }}><Text style={{ fontWeight: '600', color: '#FFFFFF' }}>保存</Text></Pressable>
             </View>
-          </View>
+          </GlassSurface>
         </View>
       </Modal>
     </SafeAreaView>

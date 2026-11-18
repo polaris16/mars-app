@@ -7,6 +7,9 @@
     "icon": "./assets/images/icon.png",
     "scheme": "marsapp",
     "userInterfaceStyle": "automatic",
+    "extra": {
+      "apiBaseUrl": "http://192.168.3.48:8000"
+    },
     "ios": {
       "icon": "./assets/expo.icon"
     },
@@ -28,9 +31,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "backgroundColor": "#F9F9FF"
         }
       ],
       "expo-secure-store",

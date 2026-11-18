@@ -1,3 +1,4 @@
+import { GlassScreen, GlassSurface, GlassPressable } from '@/components/glass-surface';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
@@ -112,7 +113,7 @@ export default function InterestsScreen() {
   }
 
   return (
-    <View className="flex-1 bg-background" style={{ flex: 1 }}>
+    <GlassScreen style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
       <SafeAreaView style={{ flex: 1 }}>
         <View style={{ flex: 1 }}>
 
@@ -190,18 +191,16 @@ export default function InterestsScreen() {
                 const selected = selectedInterestIds.includes(option.id);
 
                 return (
-                  <Pressable
+                  <GlassPressable
                     key={option.id}
                     accessibilityRole="checkbox"
                     accessibilityState={{
                       checked: selected,
                     }}
                     onPress={() => toggleInterest(option.id)}
-                    className={`min-h-11 flex-row items-center justify-center gap-1.5 rounded-full border px-4 py-2.5 ${
-                      selected
-                        ? 'border-foreground bg-foreground'
-                        : 'border-border bg-[#F5F5F5]'
-                    }`}
+                    tone={selected ? 'dark' : 'muted'}
+                    surfaceStyle={{ borderRadius: 999 }}
+                    surfaceClassName="min-h-11 flex-row items-center justify-center gap-1.5 rounded-full border px-4 py-2.5"
                   >
                     <Text
                       className={`text-sm font-semibold ${
@@ -222,7 +221,7 @@ export default function InterestsScreen() {
                     >
                       {option.name}
                     </Text>
-                  </Pressable>
+                  </GlassPressable>
                 );
               })}
             </View>
@@ -256,7 +255,7 @@ export default function InterestsScreen() {
           </ScrollView>
 
           {/* 底部操作区域 */}
-          <View className="px-6 pb-5 pt-3">
+          <GlassSurface className="p-3" style={{ marginHorizontal: 16, marginBottom: 12, borderRadius: 38 }}>
             <Button
               className="h-[52px] w-full rounded-full bg-[#171717]"
               onPress={handleComplete}
@@ -274,10 +273,10 @@ export default function InterestsScreen() {
                 />
               )}
             </Button>
-          </View>
+          </GlassSurface>
 
         </View>
       </SafeAreaView>
-    </View>
+    </GlassScreen>
   );
 }

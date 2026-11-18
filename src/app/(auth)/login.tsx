@@ -1,3 +1,4 @@
+import { GlassScreen, GlassSurface } from '@/components/glass-surface';
 import { useAuth } from '@/store/AuthContext';
 import { loginWithPhoneCode, sendPhoneCode } from '@/services/authService';
 import { router } from 'expo-router';
@@ -12,6 +13,7 @@ import { Checkbox, CheckboxIcon, CheckboxIndicator } from '@/components/ui/check
 import { ArrowRightIcon, CheckIcon, CloseCircleIcon, HelpCircleIcon, Icon } from '@/components/ui/icon';
 import { Input, InputField } from '@/components/ui/input';
 import { Modal, ModalBackdrop, ModalBody, ModalContent, ModalFooter, ModalHeader } from '@/components/ui/modal';
+import { BrandLogo } from '@/components/brand-logo';
 
 const CODE_LENGTH = 6;
 const POLICIES = ['用户协议', '隐私政策', '登录政策'] as const;
@@ -76,6 +78,7 @@ export default function LoginScreen() {
 
     // 1. 检查协议
     if (!agreed) {
+      Keyboard.dismiss();
       setFeedback({
         message: '请先阅读并同意用户协议、隐私政策及登录政策',
         field: 'agreement',
@@ -150,7 +153,7 @@ export default function LoginScreen() {
   }
 
   return (
-    <View className="flex-1 bg-background">
+    <GlassScreen style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
       <SafeAreaView style={{ flex: 1 }}>
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : Platform.OS === 'android' ? 'height' : undefined}>
           <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" showsVerticalScrollIndicator={false}>
@@ -163,20 +166,15 @@ export default function LoginScreen() {
               </View>
 
               <View className="items-center py-4">
-                <View className="mb-4 h-20 w-20 items-center justify-center rounded-2xl bg-black" accessible={false}>
-                  <Text className="text-[42px] font-semibold leading-[56px] text-white">同</Text>
-                  <View className="absolute -bottom-1 -right-1 h-5 w-5 items-center justify-center rounded-full bg-white shadow-sm">
-                    <View className="h-2.5 w-2.5 rounded-full bg-primary" />
-                  </View>
-                </View>
+                <View className="mb-4"><BrandLogo /></View>
                 <Text accessibilityRole="header" className="mb-1 text-[22px] font-bold leading-7 tracking-[-0.44px] text-foreground">同乐</Text>
                 <Text className="text-[13px] leading-[18px] text-muted-foreground">尽享精彩生活</Text>
               </View>
 
-              <View className="gap-4 py-4">
+              <GlassSurface className="gap-4 p-5" style={{ borderRadius: 28 }}>
                 <View className="gap-1">
                   <Text className="text-xs font-medium leading-4 text-muted-foreground">手机号码</Text>
-                  <Input className="h-12 gap-0 rounded-lg px-0 shadow-none" isInvalid={feedback?.field === 'phone'}>
+                  <Input className="h-12 gap-0 rounded-2xl px-0 shadow-none" isInvalid={feedback?.field === 'phone'}>
                     <Button accessibilityLabel="国家或地区：中国大陆 +86" className="h-full gap-1 rounded-r-none pl-3 pr-2" variant="ghost" onPress={() => setDialog({ title: '国家或地区', message: '中国大陆（+86）\n\n目前仅支持中国大陆手机号码登录。' })}>
                       <ButtonText className="font-medium">+86</ButtonText>
                       <Svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="#737373" strokeWidth={2} accessible={false}><Path d="m7 10 5 5 5-5" strokeLinecap="round" strokeLinejoin="round" /></Svg>
@@ -209,7 +207,7 @@ export default function LoginScreen() {
                       <ButtonText className="text-xs font-medium leading-4 text-muted-foreground">收不到验证码？</ButtonText>
                     </Button>
                   </View>
-                  <Input className="h-12 gap-0 rounded-lg pl-3 pr-1 shadow-none" isInvalid={feedback?.field === 'code'}>
+                  <Input className="h-12 gap-0 rounded-2xl pl-3 pr-1 shadow-none" isInvalid={feedback?.field === 'code'}>
                     <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#a3a3a3" strokeWidth={1.8} accessible={false}>
                       <Path d="M12 3 3.5 6.5V12c0 5 4.5 8 8.5 9 4-1 8.5-4 8.5-9V6.5L12 3Z" strokeLinejoin="round" />
                       <Rect x={8.5} y={10} width={7} height={6} rx={1.5} /><Path d="M10 10V8a2 2 0 0 1 4 0v2" />
@@ -236,9 +234,9 @@ export default function LoginScreen() {
                 </View>
 
                 <Button
-                  className="mt-2 h-12 w-full rounded-lg shadow-sm"
+                  className="mt-2 h-12 w-full rounded-full shadow-sm"
                   onPress={submit}
-                  isDisabled={submitting}
+                  isDisabled={submitting || code.length !== CODE_LENGTH}
                 >
                   <ButtonText className="text-sm font-semibold leading-5">
                     {submitting ? '登录中...' : '立即登录'}
@@ -255,7 +253,7 @@ export default function LoginScreen() {
                 {feedback && feedback.field !== 'agreement' && (
                   <Text accessibilityLiveRegion="polite" className={feedback.error ? 'text-[13px] leading-[18px] text-destructive' : 'text-[13px] leading-[18px] text-muted-foreground'}>{feedback.message}</Text>
                 )}
-              </View>
+              </GlassSurface>
 
               <View className="mt-8 items-center gap-3 px-2 pb-3 pt-4">
                 <View className="flex-row items-start justify-center gap-2">
@@ -287,6 +285,6 @@ export default function LoginScreen() {
           <ModalFooter><Button className="min-h-11" onPress={() => setDialog(undefined)}><ButtonText>我知道了</ButtonText></Button></ModalFooter>
         </ModalContent>
       </Modal>
-    </View>
+    </GlassScreen>
   );
 }

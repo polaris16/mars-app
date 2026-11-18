@@ -1,32 +1,46 @@
 
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
+import { Platform, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { GlassSurface } from '@/components/glass-surface';
+import IOSTabs from '@/components/ios-tabs';
 
 const ACTIVE_COLOR = '#171717';
 const INACTIVE_COLOR = '#737373';
-const TAB_BACKGROUND = '#FFFFFF';
-const BORDER_COLOR = '#E5E5E5';
 
 export default function TabLayout() {
+  return Platform.OS === 'ios' ? <IOSTabs /> : <GlassTabs />;
+}
+
+function GlassTabs() {
+  const insets = useSafeAreaInsets();
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
 
-        sceneContainerStyle: {
+        sceneStyle: {
           backgroundColor: '#F9F9FF',
         },
 
         tabBarActiveTintColor: ACTIVE_COLOR,
         tabBarInactiveTintColor: INACTIVE_COLOR,
+        tabBarActiveBackgroundColor: 'rgba(245,245,245,0.9)',
+        tabBarHideOnKeyboard: true,
+        tabBarBackground: () => <GlassSurface style={[StyleSheet.absoluteFill, { borderRadius: 30 }]} />,
 
         tabBarStyle: {
-          height: 64,
-          paddingTop: 7,
+          position: 'absolute',
+          bottom: Math.max(insets.bottom, 12),
+          left: 20,
+          right: 20,
+          height: 68,
+          borderRadius: 30,
+          paddingTop: 8,
           paddingBottom: 8,
-          backgroundColor: TAB_BACKGROUND,
-          borderTopWidth: 1,
-          borderTopColor: BORDER_COLOR,
+          backgroundColor: 'transparent',
+          borderTopWidth: 0,
           elevation: 0,
           shadowOpacity: 0,
         },
@@ -39,6 +53,9 @@ export default function TabLayout() {
 
         tabBarItemStyle: {
           paddingVertical: 0,
+          borderRadius: 24,
+          marginHorizontal: 4,
+          marginVertical: 3,
         },
       }}
     >
@@ -50,7 +67,7 @@ export default function TabLayout() {
             <Ionicons
               name={focused ? 'home' : 'home-outline'}
               size={22}
-              color={color}
+              color={typeof color === 'string' ? color : INACTIVE_COLOR}
             />
           ),
         }}
@@ -64,7 +81,7 @@ export default function TabLayout() {
             <Ionicons
               name={focused ? 'compass' : 'compass-outline'}
               size={22}
-              color={color}
+              color={typeof color === 'string' ? color : INACTIVE_COLOR}
             />
           ),
         }}
@@ -78,7 +95,7 @@ export default function TabLayout() {
             <Ionicons
               name={focused ? 'chatbubbles' : 'chatbubbles-outline'}
               size={22}
-              color={color}
+              color={typeof color === 'string' ? color : INACTIVE_COLOR}
             />
           ),
         }}
@@ -92,7 +109,7 @@ export default function TabLayout() {
             <Ionicons
               name={focused ? 'person' : 'person-outline'}
               size={22}
-              color={color}
+              color={typeof color === 'string' ? color : INACTIVE_COLOR}
             />
           ),
         }}

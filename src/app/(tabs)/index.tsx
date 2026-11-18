@@ -1,17 +1,11 @@
-import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  RefreshControl,
-  Text,
-  View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { GlassPressable, GlassScreen, GlassSurface } from '@/components/glass-surface';
 
-import { Ionicons } from '@expo/vector-icons';
 import { getRecommendedTopics } from '@/services/topicService';
 import type { TopicItem } from '@/types/topic';
 
@@ -34,6 +28,7 @@ const TOPIC_ICON_MAP: Record<string, string> = {
 };
 
 const DEFAULT_ICON_SET = ['⌘', '☻', '▤', '☀', '♫', '▣'];
+const PAGE_SIZE = 10;
 
 function getTopicIcon(topic: TopicItem, index: number): string {
   if (topic.icon_key && TOPIC_ICON_MAP[topic.icon_key]) {
@@ -59,48 +54,21 @@ function formatParticipantCount(count: number): string {
 }
 
 export default function HomeScreen() {
-  const router = useRouter();
-
+  const insets = useSafeAreaInsets();
+  const openRecorder = (topic: string) => router.push({ pathname: '/recorder', params: { topic } });
   const [topics, setTopics] = useState<TopicItem[]>([]);
   const [page, setPage] = useState(1);
-  const pageSize = 10;
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loadMoreError, setLoadMoreError] = useState<string | null>(null);
-
   const onEndReachedCalledDuringMomentum = useRef(true);
 
-  // 跳转到录音页面
-  const openRecorder = (topic: string) => {
-    router.push({
-      pathname: '/recorder',
-      params: {
-        topic,
-      },
-    });
-  };
-
-  const loadTopics = useCallback(
-    async (targetPage: number, isRefresh = false) => {
-      if (isRefresh) {
-        setIsRefreshing(true);
-      } else if (targetPage === 1) {
-        setIsLoading(true);
-      } else {
-        setIsLoadingMore(true);
-      }
-
-      if (targetPage === 1) {
-        setError(null);
-      } else {
-        setLoadMoreError(null);
-      }
-
-      try {
-        const res = await getRecommendedTopics(targetPage, pageSize);
+  const fetchTopics = useCallback(
+    (targetPage: number) => getRecommendedTopics(targetPage, PAGE_SIZE)
+      .then(res => {
         const newItems = res?.items ?? [];
         const total = typeof res?.total === 'number' ? res.total : undefined;
 
@@ -109,7 +77,7 @@ export default function HomeScreen() {
           setPage(1);
           const reachedEnd =
             newItems.length === 0 ||
-            newItems.length < pageSize ||
+            newItems.length < PAGE_SIZE ||
             (total !== undefined && newItems.length >= total);
           setHasMore(!reachedEnd);
         } else {
@@ -119,14 +87,15 @@ export default function HomeScreen() {
             const updated = [...prev, ...uniqueNew];
             const reachedEnd =
               newItems.length === 0 ||
-              newItems.length < pageSize ||
+              newItems.length < PAGE_SIZE ||
               (total !== undefined && updated.length >= total);
             setHasMore(!reachedEnd);
             return updated;
           });
           setPage(targetPage);
         }
-      } catch (err: unknown) {
+      })
+      .catch((err: unknown) => {
         const message =
           err instanceof Error ? err.message : '获取推荐话题失败';
         if (targetPage === 1) {
@@ -134,18 +103,31 @@ export default function HomeScreen() {
         } else {
           setLoadMoreError(message);
         }
-      } finally {
+      })
+      .finally(() => {
         setIsLoading(false);
         setIsRefreshing(false);
         setIsLoadingMore(false);
-      }
-    },
-    [pageSize]
+      }),
+    []
   );
 
+  const loadTopics = useCallback((targetPage: number, isRefresh = false) => {
+    if (isRefresh) {
+      setIsRefreshing(true);
+    } else if (targetPage === 1) {
+      setIsLoading(true);
+    } else {
+      setIsLoadingMore(true);
+    }
+    if (targetPage === 1) setError(null);
+    setLoadMoreError(null);
+    return fetchTopics(targetPage);
+  }, [fetchTopics]);
+
   useEffect(() => {
-    loadTopics(1);
-  }, [loadTopics]);
+    void fetchTopics(1);
+  }, [fetchTopics]);
 
   const handleRefresh = useCallback(() => {
     loadTopics(1, true);
@@ -175,26 +157,6 @@ export default function HomeScreen() {
     page,
     loadTopics,
   ]);
-
-  const renderHeader = () => (
-    <View className="mb-6 gap-2">
-      <View className="flex-row flex-wrap items-center gap-2">
-        <Text className="text-2xl font-bold tracking-tight text-[#0A0A0A]">
-          推荐说点什么
-        </Text>
-
-        <View className="rounded-full border border-[#E5E5E5] bg-[#F5F5F5] px-2 py-1">
-          <Text className="text-[11px] font-medium text-[#737373]">
-            今日精选
-          </Text>
-        </View>
-      </View>
-
-      <Text className="text-[13px] leading-5 text-[#737373]">
-        挑选一个灵感话题，开启今日随心畅聊
-      </Text>
-    </View>
-  );
 
   const renderFooter = () => {
     if (isLoadingMore) {
@@ -269,117 +231,106 @@ export default function HomeScreen() {
   };
 
   const renderItem = ({ item, index }: { item: TopicItem; index: number }) => (
-    <Pressable
-      accessibilityRole="button"
+    <GlassPressable
       accessibilityLabel={`选择话题：${item.title}`}
       onPress={() => openRecorder(item.title)}
-      className="flex-row items-center justify-between rounded-2xl border border-[#E5E5E5] bg-white p-4"
-      style={{ transform: [{ scale: 0.985 }] }}
+      surfaceStyle={styles.topic}
     >
-      {/* 左侧内容 */}
-      <View className="min-w-0 flex-1 flex-row items-center gap-3.5">
-        {/* 图标 */}
-        <View className="h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#E5E5E5]/60 bg-[#F5F5F5]">
-          <Text className="text-[22px] font-semibold text-[#0A0A0A]">
-            {getTopicIcon(item, index)}
-          </Text>
-        </View>
-
-        {/* 话题信息 */}
-        <View className="min-w-0 flex-1 gap-1">
-          <View className="flex-row flex-wrap items-center gap-2">
-            <Text
-              numberOfLines={1}
-              className="text-base font-semibold tracking-tight text-[#0A0A0A]"
-            >
-              {item.title}
-            </Text>
-
-            <View className="rounded-full bg-[#F5F5F5] px-2 py-0.5">
-              <Text className="text-[11px] font-medium text-[#737373]">
-                {formatParticipantCount(item.participant_count)}
-              </Text>
-            </View>
-          </View>
-
-          <Text
-            numberOfLines={1}
-            className="text-xs leading-5 text-[#737373]"
-          >
-            {item.summary || item.prompt}
-          </Text>
-        </View>
+      <View style={styles.topicIcon}><Text style={styles.topicSymbol}>{getTopicIcon(item, index)}</Text></View>
+      <View style={styles.topicContent}>
+        <View style={styles.topicHeading}><Text style={styles.topicTitle}>{item.title}</Text><Text style={styles.topicCount}>{formatParticipantCount(item.participant_count)}</Text></View>
+        <Text numberOfLines={2} style={styles.topicDescription}>{item.summary || item.prompt}</Text>
       </View>
-
-      {/* 右侧操作 */}
-      <View className="ml-2 shrink-0 flex-row items-center gap-1">
-        <Text className="text-[12px] font-medium text-[#737373]">去说两句</Text>
-        <Text className="text-base text-[#737373]">›</Text>
-      </View>
-    </Pressable>
+      <Ionicons name="arrow-forward" size={18} color="#737373" />
+    </GlassPressable>
   );
 
   return (
-    <View
-      className="flex-1 bg-[#F9F9FF]"
-      style={{
-        flex: 1,
-        backgroundColor: '#F9F9FF',
-      }}
-    >
-      <StatusBar style="dark" backgroundColor="#F9F9FF" />
-
-      <SafeAreaView
-        style={{
-          flex: 1,
-          backgroundColor: '#F9F9FF',
-        }}
-      >
-        <View className="flex-1 bg-[#F9F9FF]">
-          {/* 话题列表 */}
-          <FlatList
-            data={topics}
-            keyExtractor={(item) => String(item.id)}
-            renderItem={renderItem}
-            ItemSeparatorComponent={() => <View className="h-3" />}
-            ListHeaderComponent={renderHeader}
-            ListFooterComponent={renderFooter}
-            ListEmptyComponent={renderEmpty}
-            contentContainerStyle={{
-              paddingHorizontal: 20,
-              paddingTop: 20,
-              paddingBottom: 110,
-            }}
-            showsVerticalScrollIndicator={false}
-            refreshControl={
-              <RefreshControl
-                refreshing={isRefreshing}
-                onRefresh={handleRefresh}
-                tintColor="#737373"
-                colors={['#171717']}
-              />
-            }
-            onEndReached={handleLoadMore}
-            onEndReachedThreshold={0.2}
-            onMomentumScrollBegin={() => {
-              onEndReachedCalledDuringMomentum.current = false;
-            }}
-          />
-
-          {/* 悬浮录音按钮 */}
-          <View pointerEvents="box-none" className="absolute bottom-5 right-5">
-            <Pressable
+    <GlassScreen>
+      <StatusBar style="dark" />
+      <SafeAreaView style={styles.fill} edges={['top', 'left', 'right']}>
+        <FlatList
+          data={topics}
+          keyExtractor={item => String(item.id)}
+          renderItem={renderItem}
+          ItemSeparatorComponent={TopicSeparator}
+          ListFooterComponent={renderFooter}
+          ListEmptyComponent={renderEmpty}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={[styles.content, { paddingBottom: 110 + insets.bottom }]}
+          refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor="#737373" colors={['#171717']} />}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.2}
+          onMomentumScrollBegin={() => { onEndReachedCalledDuringMomentum.current = false; }}
+          ListHeaderComponent={<>
+          <View style={styles.header}>
+            <View style={styles.brand}>
+              <View><Text style={styles.brandName}>同乐</Text><Text style={styles.caption}>尽享美好生活</Text></View>
+            </View>
+            <GlassPressable
+              accessibilityLabel="录音列表"
               accessibilityRole="button"
-              accessibilityLabel="发起原声畅聊"
-              onPress={() => openRecorder('自由畅聊 / 即兴倾诉')}
-              className="h-14 w-14 items-center justify-center rounded-full border border-[#404040] bg-[#171717] shadow-lg"
-              style={{ transform: [{ scale: 0.95 }] }}
+              onPress={() => router.push('/recorder/list')}
+              surfaceStyle={styles.recordingsButton}
             >
-              <Ionicons name="mic-outline" size={22} color="#ffffff" />
-            </Pressable>
+              <Ionicons name="list-outline" size={20} color="#404040" />
+            </GlassPressable>
           </View>
-        </View>
+
+          <GlassSurface style={styles.hero}>
+            <Text style={styles.heroTitle}>你的生活，{'\n'}值得被听见。</Text>
+            <Text style={styles.heroDescription}>不必准备，让想说的话自然发生。</Text>
+            <View accessible={false} style={styles.wave}>
+              {[12, 23, 16, 32, 20, 42, 28, 18, 34, 48, 30, 20, 38, 26, 16, 30, 44, 24, 14, 26, 18, 10].map((height, index) => <View key={index} style={[styles.waveBar, { height, backgroundColor: index > 7 && index < 15 ? '#171717' : '#D4D4D4' }]} />)}
+            </View>
+            <GlassPressable tone="dark" accessibilityLabel="说两句，开始自由畅聊" onPress={() => openRecorder('自由畅聊 / 即兴倾诉')} style={styles.recordAction} surfaceStyle={styles.recordButton}>
+              <Ionicons name="mic-outline" size={21} color="#FFFFFF" /><Text style={styles.recordLabel}>说两句</Text>
+            </GlassPressable>
+          </GlassSurface>
+
+          <View style={styles.sectionHeader}>
+            <View><Text style={styles.sectionTitle}>推荐话题</Text><Text style={styles.sectionDescription}>选一个话题，留住此刻的灵感</Text></View>
+            <GlassSurface tone="muted" style={styles.featured}><Text style={styles.badgeText}>今日精选</Text></GlassSurface>
+          </View>
+          </>}
+        />
       </SafeAreaView>
-    </View>
+    </GlassScreen>
   );
 }
+
+function TopicSeparator() {
+  return <View style={styles.topicSeparator} />;
+}
+
+const styles = StyleSheet.create({
+  fill: { flex: 1 },
+  content: { paddingHorizontal: 20, paddingTop: 16, width: '100%', maxWidth: 640, alignSelf: 'center' },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 },
+  brand: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  recordingsButton: { width: 44, height: 44, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  brandName: { fontSize: 20, fontWeight: '700', color: '#0A0A0A' },
+  caption: { fontSize: 11, color: '#737373', lineHeight: 18 },
+  hero: { padding: 22, borderRadius: 28, marginBottom: 30 },
+  badgeText: { color: '#737373', fontSize: 11, fontWeight: '500' },
+  heroTitle: { color: '#0A0A0A', fontSize: 27, lineHeight: 38, fontWeight: '700', letterSpacing: -0.8 },
+  heroDescription: { color: '#737373', fontSize: 13, marginTop: 9, lineHeight: 21 },
+  wave: { flexDirection: 'row', height: 76, alignItems: 'center', justifyContent: 'space-between', marginTop: 12, gap: 4 },
+  waveBar: { width: 4, borderRadius: 3 },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 16 },
+  sectionTitle: { color: '#0A0A0A', fontSize: 21, fontWeight: '700' },
+  sectionDescription: { color: '#737373', fontSize: 12, marginTop: 6, lineHeight: 18 },
+  featured: { borderRadius: 20, paddingHorizontal: 11, paddingVertical: 7 },
+  topicSeparator: { height: 12 },
+  topic: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 22 },
+  topicIcon: { width: 44, height: 48, backgroundColor: 'rgba(245,245,245,0.85)', borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
+  topicSymbol: { fontSize: 23, color: '#171717' },
+  topicContent: { flex: 1, gap: 6 },
+  topicHeading: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 },
+  topicTitle: { fontSize: 15, fontWeight: '600', color: '#0A0A0A' },
+  topicCount: { fontSize: 10, color: '#737373' },
+  topicDescription: { fontSize: 11, lineHeight: 17, color: '#737373' },
+  recordAction: { width: '100%', marginTop: 8 },
+  recordButton: { minHeight: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 22, paddingVertical: 14, borderRadius: 18 },
+  recordLabel: { fontSize: 14, fontWeight: '600', color: '#FFFFFF' },
+});

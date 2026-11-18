@@ -1,6 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
+import Constants from 'expo-constants';
 
-globalThis.API_BASE_URL = globalThis.API_BASE_URL || 'http://192.168.2.4:8000';
+const API_BASE_URL = Constants.expoConfig?.extra?.apiBaseUrl as string;
 const AUTH_TOKEN_KEY = 'access_token';
 
 type RequestOptions = {
@@ -23,7 +24,7 @@ async function request<T>(path: string, method: string, body?: unknown, options:
     delete headers.Authorization;
   }
 
-  const response = await fetch(`${globalThis.API_BASE_URL}${path}`, {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
     method,
     headers,
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
@@ -56,5 +57,3 @@ export const patch = <T>(path: string, body?: unknown, options?: RequestOptions)
 export const put = <T>(path: string, body?: unknown, options?: RequestOptions) => request<T>(path, 'PUT', body, options);
 const deleteRequest = <T>(path: string, options?: RequestOptions) => request<T>(path, 'DELETE', undefined, options);
 export { deleteRequest as delete };
-
-

@@ -1,3 +1,4 @@
+import { GlassScreen, GlassSurface, GlassPressable } from '@/components/glass-surface';
 import { useEffect, useState } from 'react';
 import {
   Pressable,
@@ -64,9 +65,8 @@ export default function RoleSelectScreen() {
   };
 
   return (
-    <View
-      className="flex-1 bg-background"
-      style={{ flex: 1 }}
+    <GlassScreen
+      style={{ flex: 1, backgroundColor: '#FFFFFF' }}
     >
       <SafeAreaView style={{ flex: 1 }}>
         <View style={{ flex: 1 }}>
@@ -119,18 +119,15 @@ export default function RoleSelectScreen() {
                 const isSelected = selectedRoleId === role.id;
 
                 return (
-                  <Pressable
+                  <GlassPressable
                     key={role.id}
                     accessibilityRole="radio"
                     accessibilityState={{
                       selected: isSelected,
                     }}
                     onPress={() => handleSelectRole(role.id)}
-                    className={`rounded-2xl border p-5 ${
-                      isSelected
-                        ? 'border-foreground bg-[#F5F5F5]'
-                        : 'border-border bg-background'
-                    }`}
+                    surfaceStyle={{ borderColor: isSelected ? '#171717' : '#FFFFFF', borderRadius: 24 }}
+                    surfaceClassName="p-5"
                   >
                     <View className="flex-row items-center justify-between">
                       <View className="mr-4 flex-1">
@@ -156,7 +153,7 @@ export default function RoleSelectScreen() {
                         )}
                       </View>
                     </View>
-                  </Pressable>
+                  </GlassPressable>
                 );
               })}
 
@@ -183,7 +180,7 @@ export default function RoleSelectScreen() {
           </ScrollView>
 
           {/* 底部固定按钮 */}
-          <View className="px-6 pb-5 pt-3">
+          <GlassSurface className="p-3" style={{ marginHorizontal: 16, marginBottom: 12, borderRadius: 38 }}>
             <Button
               className="h-[52px] w-full rounded-full bg-[#171717]"
               onPress={handleConfirm}
@@ -201,10 +198,10 @@ export default function RoleSelectScreen() {
                 />
               )}
             </Button>
-          </View>
+          </GlassSurface>
 
         </View>
       </SafeAreaView>
-    </View>
+    </GlassScreen>
   );
 }

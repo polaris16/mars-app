@@ -1,11 +1,12 @@
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import SplashScreen from '@/components/Splash/SplashScreen';
 import { useAuth } from '@/store/AuthContext';
 
 export default function Index() {
   const [splashFinished, setSplashFinished] = useState(false);
+  const finishSplash = useCallback(() => setSplashFinished(true), []);
   const {
     initialized,
     token,
@@ -54,7 +55,7 @@ export default function Index() {
 
   return (
     <SplashScreen
-      onFinish={() => setSplashFinished(true)}
+      onFinish={finishSplash}
     />
   );
 }
