@@ -615,17 +615,28 @@ export default function RecordingPage() {
         {/* 顶部导航 */}
         {/* ================================= */}
 
-        <View className="h-16 flex-row items-center justify-between px-4">
-          <Pressable
-            onPress={handleBack}
-            className="h-11 w-11 items-center justify-center active:opacity-60"
-          >
-            <Ionicons
-              name="chevron-back"
-              size={23}
-              color="#181C22"
-            />
-          </Pressable>
+        <View className="min-h-16 flex-row items-center justify-between gap-3 px-4 py-2">
+          <View className="min-w-0 flex-1 flex-row items-center">
+            <Pressable
+              onPress={handleBack}
+              accessibilityRole="button"
+              accessibilityLabel="返回"
+              className="h-11 w-11 shrink-0 items-center justify-center active:opacity-60"
+            >
+              <Ionicons
+                name="chevron-back"
+                size={23}
+                color="#181C22"
+              />
+            </Pressable>
+            <Text
+              accessibilityRole="header"
+              dynamicTypeRamp="headline"
+              style={{ ...Typography.headline, marginLeft: 4, flexShrink: 1, color: '#1B1C1C' }}
+            >
+              记录
+            </Text>
+          </View>
 
           <Button
             size="sm"
@@ -694,11 +705,11 @@ export default function RecordingPage() {
                   </View>
 
                   <Text dynamicTypeRamp="headline" style={{ ...Typography.headline, color: '#111111' }}>
-                    暂无录音
+                    暂无记录
                   </Text>
 
                   <Text dynamicTypeRamp="subheadline" className="mt-2 text-center" style={{ ...Typography.subhead, color: '#4B5563' }}>
-                    随心记录灵感、对话与心声，支持自动生成文字与智能降噪
+                    随心记录灵感与心声
                   </Text>
                 </GlassSurface>
               )}
@@ -720,7 +731,7 @@ export default function RecordingPage() {
             <View pointerEvents="box-none" className="h-24 w-full items-center justify-center">
               <GlassPressable
                 onPress={handleMasterButton}
-                tone="dark" accessibilityLabel={isRecording ? '停止并保存录音' : '开始录音'}
+                tone="dark"
                 surfaceClassName="h-20 w-20 items-center justify-center"
                 surfaceStyle={{ borderRadius: 40 }}
               >
@@ -732,22 +743,16 @@ export default function RecordingPage() {
               </GlassPressable>
             </View>
 
-            {/* 提示文字 */}
-            <View pointerEvents="none" className="flex-row flex-wrap items-center justify-center gap-1.5">
-              <Ionicons
-                name="information-circle-outline"
-                size={15}
-                color="#737373"
-              />
-
-              <Text dynamicTypeRamp="footnote" style={Typography.footnote} className="text-muted-foreground">
-                {isRecording
-                  ? '录音中，再次点击停止并保存'
-                  : sheetVisible
-                    ? '录音已暂停，可继续或重录'
-                    : '点击中心按钮开启录音'}
-              </Text>
-            </View>
+            {/* 录音状态提示 */}
+            {/*{(isRecording || sheetVisible) && (
+              <View pointerEvents="none" className="flex-row flex-wrap items-center justify-center gap-1.5">
+                <Ionicons
+                  name="information-circle-outline"
+                  size={15}
+                  color="#737373"
+                />
+              </View>
+            )}*/}
           </View>
         </View>
 

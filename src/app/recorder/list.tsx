@@ -94,7 +94,7 @@ export default function RecordingListPage() {
         <Pressable onPress={() => router.back()} accessibilityLabel="返回" style={{ width: 40, height: 40, alignItems: 'center', justifyContent: 'center' }}>
           <Ionicons name="chevron-back" size={23} color="#1B1C1C" />
         </Pressable>
-        <Text dynamicTypeRamp="headline" style={{ ...Typography.headline, marginLeft: 4, color: '#1B1C1C' }}>记录</Text>
+        <Text accessibilityRole="header" dynamicTypeRamp="headline" style={{ ...Typography.headline, marginLeft: 4, flexShrink: 1, color: '#1B1C1C' }}>历史</Text>
       </View>
 
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 10, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>

@@ -54,10 +54,17 @@ export default function AudioPublishPage() {
       <GlassBackdrop />
       <StatusBar barStyle="dark-content" />
 
-      <View style={{ height: 64, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8 }}>
-        <Pressable onPress={() => router.back()} className="h-11 w-11 items-center justify-center" accessibilityLabel="返回">
+      <View style={{ minHeight: 64, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8 }}>
+        <Pressable onPress={() => router.back()} className="h-11 w-11 shrink-0 items-center justify-center" accessibilityRole="button" accessibilityLabel="返回">
           <Ionicons name="chevron-back" size={23} color="#181C22" />
         </Pressable>
+        <Text
+          accessibilityRole="header"
+          dynamicTypeRamp="headline"
+          style={{ ...Typography.headline, marginLeft: 4, flexShrink: 1, color: '#1B1C1C' }}
+        >
+          更多
+        </Text>
       </View>
 
       <View style={{ flex: 1, paddingHorizontal: 20, paddingBottom: 12 }}>
@@ -66,11 +73,6 @@ export default function AudioPublishPage() {
           contentContainerStyle={{ flexGrow: 1, paddingTop: 8, paddingBottom: 20 }}
           showsVerticalScrollIndicator={false}
         >
-          <View style={{ marginBottom: 24, paddingTop: 8 }}>
-            <Text dynamicTypeRamp="title1" style={{ ...Typography.title1, marginBottom: 6, color: '#0A0A0A' }}>更多</Text>
-            <Text dynamicTypeRamp="subheadline" style={{ ...Typography.subhead, color: '#737373' }}>添加照片与视频，沉淀更生动的记忆。</Text>
-          </View>
-
           {media.length > 0 && (
             <View style={{ marginBottom: 16, alignItems: 'flex-end' }}>
               <Text dynamicTypeRamp="caption1" style={{ ...Typography.caption1, color: '#737373' }}>{photos} 照片 · {videos} 视频</Text>

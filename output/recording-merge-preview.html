@@ -1,0 +1,172 @@
+<style>
+  #recording-merge-preview { color-scheme: light dark; }
+  #recording-merge-preview .stage { display: flex; justify-content: center; padding: 18px 0; }
+  #recording-merge-preview .phone { --paper: light-dark(#f9f9ff, #171719); --ink: light-dark(#171717, #f5f5f7); --secondary: light-dark(#737373, #b6b6bc); --surface: light-dark(#fff, #242427); --line: light-dark(#e5e5e5, #3e3e42); --soft: light-dark(#f3f3f6, #333337); --action: light-dark(#171717, #f5f5f7); --action-ink: light-dark(#fff, #171717); --blue: light-dark(#007aff, #0a84ff); width: min(390px, 100%); min-height: 660px; box-sizing: border-box; background: var(--paper); color: var(--ink); border: 1px solid var(--line); border-radius: 28px; font: 400 15px/20px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; display: flex; flex-direction: column; padding: 12px 20px 22px; }
+  #recording-merge-preview .header { min-height: 52px; display: flex; align-items: center; gap: 8px; }
+  #recording-merge-preview h2, #recording-merge-preview h3 { font: 600 17px/22px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; }
+  #recording-merge-preview .event-title { font-size: 22px; line-height: 28px; font-weight: 700; }
+  #recording-merge-preview p { margin: 0; }
+  #recording-merge-preview button { font: inherit; cursor: default; color: inherit; }
+  #recording-merge-preview button:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+  #recording-merge-preview .icon-button { display: inline-flex; align-items: center; justify-content: center; padding: 0; width: 44px; height: 44px; flex-shrink: 0; border: 0; background: transparent; border-radius: 22px; }
+  #recording-merge-preview .header-icon { display: inline-flex; width: 24px; align-items: center; justify-content: center; }
+  #recording-merge-preview .body { flex: 1; padding-top: 14px; }
+  #recording-merge-preview .context { margin-bottom: 28px; }
+  #recording-merge-preview .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  #recording-merge-preview .count { color: var(--secondary); font-size: 12px; line-height: 16px; }
+  #recording-merge-preview .clips { display: grid; gap: 10px; }
+  #recording-merge-preview .clip { padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; }
+  #recording-merge-preview .clip-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  #recording-merge-preview .clip-title { font-weight: 600; }
+  #recording-merge-preview .meta { color: var(--secondary); font-size: 13px; line-height: 18px; margin-top: 6px; }
+  #recording-merge-preview .audio { display: flex; align-items: center; gap: 12px; }
+  #recording-merge-preview .play { background: var(--soft); }
+  #recording-merge-preview .wave { flex: 1; display: flex; align-items: center; justify-content: space-between; height: 32px; gap: 3px; color: var(--secondary); }
+  #recording-merge-preview .wave span { display: block; width: 3px; height: var(--h); border-radius: 3px; background: currentColor; }
+  #recording-merge-preview .duration { color: var(--secondary); font-size: 12px; line-height: 16px; font-variant-numeric: tabular-nums; }
+  #recording-merge-preview .attachments { margin-top: 24px; }
+  #recording-merge-preview .media { display: flex; flex-wrap: wrap; gap: 8px; }
+  #recording-merge-preview .media-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: calc((100% - 16px) / 3); min-height: 76px; background: var(--soft); color: var(--secondary); border: 0; border-radius: 12px; font-size: 12px; line-height: 16px; }
+  #recording-merge-preview .add { border: 0; padding: 0; min-height: 44px; display: flex; align-items: center; gap: 4px; background: transparent; color: var(--blue); font-size: 15px; line-height: 20px; }
+  #recording-merge-preview .add:disabled { opacity: 0.45; }
+  #recording-merge-preview .picker { display: flex; gap: 8px; flex-wrap: wrap; padding-top: 12px; }
+  #recording-merge-preview .choice { background: var(--soft); color: var(--ink); border: 0; border-radius: 12px; min-height: 44px; padding: 8px 14px; }
+  #recording-merge-preview .footer { display: flex; justify-content: center; padding-top: 28px; }
+  #recording-merge-preview .microphone { width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 50%; background: var(--action); color: var(--action-ink); }
+  #recording-merge-preview .microphone svg { width: 30px; height: 30px; }
+  #recording-merge-preview .status { margin-top: 12px; min-height: 18px; text-align: center; color: var(--secondary); font-size: 13px; line-height: 18px; }
+  #recording-merge-preview [hidden] { display: none; }
+  @media(max-width: 360px) { #recording-merge-preview .phone { padding-left: 14px; padding-right: 14px; } }
+</style>
+<div id="recording-merge-preview">
+  <div class="stage viz-dotted-background">
+    <section class="phone" aria-label="同一件事的多段录音与共享附件布局示意">
+      <header class="header">
+        <span class="header-icon" aria-hidden="true"><i data-lucide="chevron-left"></i></span>
+        <h2>记录</h2>
+      </header>
+      <div class="body">
+        <div class="context"><h3 class="event-title">周末的散步</h3><p class="meta">今天 15:26</p></div>
+        <section aria-label="这件事的分段录音">
+          <div class="section-heading"><h3>录音</h3><span class="count clip-count">共 2 段</span></div>
+          <div class="clips"></div>
+        </section>
+        <section class="attachments" aria-label="这件事的共享照片和视频">
+          <div class="section-heading"><h3>照片与视频</h3><button class="add" type="button" aria-expanded="false"><i data-lucide="plus" aria-hidden="true"></i><span>添加</span></button></div>
+          <div class="media" aria-label="整条记录的共享附件示意"></div>
+          <p class="count empty-media" hidden>暂无附件</p>
+          <div class="picker" role="group" aria-label="选择共享附件类型示意" hidden>
+            <button class="choice" type="button" data-kind="photo">添加照片</button>
+            <button class="choice" type="button" data-kind="video">添加视频</button>
+            <button class="choice cancel" type="button">取消</button>
+          </div>
+        </section>
+      </div>
+      <footer>
+        <div class="footer"><button class="microphone" type="button" aria-label="示意继续录一段"><i data-lucide="mic" aria-hidden="true"></i></button></div>
+        <p class="status" aria-live="polite"></p>
+      </footer>
+    </section>
+  </div>
+</div>
+<script>
+(() => {
+  const root = document.getElementById('recording-merge-preview');
+  const media = root.querySelector('.media');
+  const clips = root.querySelector('.clips');
+  const count = root.querySelector('.clip-count');
+  const picker = root.querySelector('.picker');
+  const add = root.querySelector('.add');
+  const mic = root.querySelector('.microphone');
+  const status = root.querySelector('.status');
+  const emptyMedia = root.querySelector('.empty-media');
+  const validItems = value => Array.isArray(value) && value.length <= 9 && value.every(kind => kind === 'photo' || kind === 'video');
+  const validSegments = value => Array.isArray(value) && value.length <= 30 && value.every(duration => typeof duration === 'string' && /^\d{2}:\d{2}$/.test(duration));
+  function getSaved(state) { return state?.privateContent?.schema === 'shared-event' ? state.privateContent : null; }
+  const initial = getSaved(globalThis.openai?.widgetState);
+  let items = validItems(initial?.items) ? [...initial.items] : ['photo', 'video'];
+  let segments = validSegments(initial?.segments) ? [...initial.segments] : ['01:42', '00:36'];
+  let recording = false;
+  let playing = -1;
+  function remember() {
+    if (globalThis.openai?.setWidgetState) {
+      globalThis.openai.setWidgetState({ modelContent: { layout: '同一件事的多段录音和共享附件', segmentCount: segments.length, attachmentCount: items.length }, privateContent: { schema: 'shared-event', items: [...items], segments: [...segments] } }).catch(() => {});
+    }
+  }
+  function icons() { if (globalThis.lucide) globalThis.lucide.createIcons(); }
+  function renderMedia() {
+    media.replaceChildren();
+    items.forEach((kind, index) => {
+      const tile = document.createElement('button');
+      tile.className = 'media-item';
+      tile.type = 'button';
+      tile.setAttribute('aria-label', `删除整条记录的示意${kind === 'photo' ? '照片' : '视频'} ${index + 1}`);
+      tile.innerHTML = `<i data-lucide="${kind === 'photo' ? 'image' : 'video'}" aria-hidden="true"></i><span>${kind === 'photo' ? '照片' : '视频'} ${index + 1}</span>`;
+      tile.addEventListener('click', () => { items.splice(index, 1); renderMedia(); remember(); });
+      media.appendChild(tile);
+    });
+    emptyMedia.hidden = items.length > 0;
+    add.disabled = recording || items.length >= 9;
+    icons();
+  }
+  function renderClips() {
+    clips.replaceChildren();
+    count.textContent = `共 ${segments.length} 段`;
+    segments.forEach((duration, index) => {
+      const clip = document.createElement('article');
+      clip.className = 'clip';
+      clip.innerHTML = `<div class="clip-heading"><span class="clip-title">第 ${index + 1} 段</span><button class="icon-button remove" type="button" aria-label="删除示意录音第 ${index + 1} 段"><i data-lucide="trash-2" aria-hidden="true"></i></button></div><div class="audio"><button class="icon-button play" type="button" aria-label="示意播放第 ${index + 1} 段" aria-pressed="${playing === index}"><i data-lucide="${playing === index ? 'pause' : 'play'}" aria-hidden="true"></i></button><div class="wave" aria-hidden="true"></div><span class="duration">${duration}</span></div>`;
+      const wave = clip.querySelector('.wave');
+      [10, 18, 26, 14, 22, 30, 18, 12, 24, 32, 20, 14, 28, 18].forEach(height => {
+        const bar = document.createElement('span');
+        bar.style.setProperty('--h', `${height}px`);
+        wave.appendChild(bar);
+      });
+      clip.querySelector('.remove').addEventListener('click', () => {
+        segments.splice(index, 1); playing = -1; renderClips(); remember();
+        status.textContent = '已移除这段录音，共享附件保留';
+      });
+      clip.querySelector('.play').addEventListener('click', () => {
+        playing = playing === index ? -1 : index;
+        status.textContent = playing < 0 ? '' : '播放状态示意 · 不播放声音';
+        renderClips();
+      });
+      clips.appendChild(clip);
+    });
+    icons();
+  }
+  add.addEventListener('click', () => {
+    picker.hidden = !picker.hidden;
+    add.setAttribute('aria-expanded', String(!picker.hidden));
+  });
+  root.querySelectorAll('[data-kind]').forEach(button => button.addEventListener('click', () => {
+    if (items.length < 9) items.push(button.dataset.kind);
+    picker.hidden = true;
+    add.setAttribute('aria-expanded', 'false');
+    renderMedia();
+    status.textContent = '附件已加入整条记录';
+    remember();
+  }));
+  root.querySelector('.cancel').addEventListener('click', () => {
+    picker.hidden = true;
+    add.setAttribute('aria-expanded', 'false');
+  });
+  mic.addEventListener('click', () => {
+    recording = !recording;
+    mic.innerHTML = `<i data-lucide="${recording ? 'square' : 'mic'}" aria-hidden="true"></i>`;
+    mic.setAttribute('aria-label', recording ? '示意停止这一段录音' : '示意继续录一段');
+    status.textContent = recording ? '新一段录音示意 · 不使用麦克风' : '新一段已加入这件事';
+    if (!recording) { segments.push('00:24'); renderClips(); remember(); }
+    picker.hidden = true;
+    add.setAttribute('aria-expanded', 'false');
+    renderMedia();
+  });
+  window.addEventListener('openai:set_globals', event => {
+    const restored = getSaved(event.detail?.globals?.widgetState);
+    if (validItems(restored?.items)) { items = [...restored.items]; renderMedia(); }
+    if (validSegments(restored?.segments)) { segments = [...restored.segments]; renderClips(); }
+  });
+  renderClips();
+  renderMedia();
+})();
+</script>

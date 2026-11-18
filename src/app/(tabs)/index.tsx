@@ -266,7 +266,7 @@ export default function HomeScreen() {
           ListHeaderComponent={<>
           <View style={styles.header}>
             <View style={styles.brand}>
-              <View><Text dynamicTypeRamp="title3" style={styles.brandName}>美刻</Text><Text dynamicTypeRamp="footnote" style={styles.caption}>此刻，即美好</Text></View>
+              <View><Text dynamicTypeRamp="largeTitle" style={styles.brandName}>美刻</Text><Text dynamicTypeRamp="subheadline" style={styles.caption}>此刻，即美好</Text></View>
             </View>
             <GlassPressable
               accessibilityLabel="录音列表"
@@ -279,8 +279,8 @@ export default function HomeScreen() {
           </View>
 
           <GlassSurface style={styles.hero}>
-            <Text dynamicTypeRamp="title1" style={styles.heroTitle}>你的生活，{'\n'}值得被听见。</Text>
-            <Text dynamicTypeRamp="subheadline" style={styles.heroDescription}>不必准备，让想说的话自然发生。</Text>
+            <Text dynamicTypeRamp="title1" style={styles.heroTitle}>用声音，{'\n'}收藏生活</Text>
+            <Text dynamicTypeRamp="subheadline" style={styles.heroDescription}>不必准备，让想说的话自然发生</Text>
             <View accessible={false} style={styles.wave}>
               {[12, 23, 16, 32, 20, 42, 28, 18, 34, 48, 30, 20, 38, 26, 16, 30, 44, 24, 14, 26, 18, 10].map((height, index) => <View key={index} style={[styles.waveBar, { height, backgroundColor: index > 7 && index < 15 ? '#171717' : '#D4D4D4' }]} />)}
             </View>
@@ -310,8 +310,8 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   recordingsButton: { width: 44, height: 44, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  brandName: { ...Typography.title3, color: '#0A0A0A' },
-  caption: { ...Typography.footnote, color: '#737373' },
+  brandName: { ...Typography.largeTitle, color: '#0A0A0A' },
+  caption: { ...Typography.subhead, marginTop: 6, color: '#737373' },
   hero: { padding: 22, borderRadius: 28, marginBottom: 30 },
   badgeText: { ...Typography.caption1, color: '#737373' },
   heroTitle: { ...Typography.title1, color: '#0A0A0A' },
