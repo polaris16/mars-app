@@ -70,8 +70,8 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
               <BrandLogo />
             </View>
 
-            <Text accessibilityRole="header" style={styles.title}>尽享美好生活</Text>
-            <Text style={styles.description}>发现身边的美好，{'\n'}和志趣相投的人，一起热爱生活。</Text>
+            <Text accessibilityRole="header" style={styles.title}>此刻，即美好</Text>
+            <Text style={styles.description}>探索生活的新意与温度。</Text>
 
             <View style={styles.features}>
               {LIFE_HIGHLIGHTS.map(feature => (
@@ -84,9 +84,9 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
           </Animated.View>
 
           <View style={styles.footer}>
-            <GlassSurface style={styles.loading} accessibilityRole="progressbar" accessibilityLabel="正在开启同乐" accessibilityState={{ busy: true }}>
+            <GlassSurface style={styles.loading} accessibilityRole="progressbar" accessibilityLabel="正在开启美刻" accessibilityState={{ busy: true }}>
               <ActivityIndicator size="small" color="#525252" accessible={false} />
-              <Text style={styles.loadingLabel}>正在开启同乐</Text>
+              <Text style={styles.loadingLabel}>正在开启美刻</Text>
             </GlassSurface>
           </View>
         </ScrollView>

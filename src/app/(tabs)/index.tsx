@@ -265,7 +265,7 @@ export default function HomeScreen() {
           ListHeaderComponent={<>
           <View style={styles.header}>
             <View style={styles.brand}>
-              <View><Text style={styles.brandName}>同乐</Text><Text style={styles.caption}>尽享美好生活</Text></View>
+              <View><Text style={styles.brandName}>美刻</Text><Text style={styles.caption}>此刻，即美好</Text></View>
             </View>
             <GlassPressable
               accessibilityLabel="录音列表"

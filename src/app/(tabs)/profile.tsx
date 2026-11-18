@@ -4,6 +4,7 @@ import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GlassPressable, GlassScreen, GlassSurface } from '@/components/glass-surface';
 import { useAuth } from '@/store/AuthContext';
+import { DEFAULT_AVATAR_SOURCE } from '@/constants/avatar';
 
 export default function ProfileScreen() {
   const { user } = useAuth();
@@ -15,7 +16,7 @@ export default function ProfileScreen() {
         <Text style={styles.subtitle}>收藏声音，也收藏生活</Text>
         <GlassSurface style={styles.profile}>
           <View style={styles.avatar}>
-            {user?.avatar ? <Image source={{ uri: user.avatar }} style={styles.avatarImage} /> : <Ionicons name="person" size={38} color="#2563EB" />}
+            <Image source={user?.avatar ? { uri: user.avatar } : DEFAULT_AVATAR_SOURCE} style={styles.avatarImage} />
           </View>
           <Text style={styles.name}>{user?.nickname || '个人中心'}</Text>
           <Text style={styles.description}>管理个人信息及应用设置</Text>

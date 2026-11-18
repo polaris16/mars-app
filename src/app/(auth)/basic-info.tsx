@@ -1,11 +1,14 @@
-import { GlassScreen, GlassSurface, GlassPressable } from '@/components/glass-surface';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import { GlassScreen, GlassSurface } from '@/components/glass-surface';
+import { BirthdayPicker } from '@/components/birthday-picker';
+import { DEFAULT_AVATAR_SOURCE } from '@/constants/avatar';
+import { formatDate, MIN_BIRTHDAY_YEAR, parseBirthday } from '@/utils/profile-date';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import {
   Alert,
   Image,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -26,25 +29,17 @@ type Gender = 'male' | 'female';
 const MAX_NICKNAME_LENGTH = 20;
 const MAX_AVATAR_SIZE = 5 * 1024 * 1024;
 
-function formatDate(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-
-  return `${year}-${month}-${day}`;
-}
-
 export default function BasicInfoScreen() {
   const { user, completeBasicInfo } = useAuth();
 
   const [avatar, setAvatar] = useState(user?.avatar ?? '');
   const [nickname, setNickname] = useState(user?.nickname ?? '');
   const [gender, setGender] = useState<Gender | undefined>(
-    user?.gender
+    user?.gender === 'male' || user?.gender === 'female' ? user.gender : undefined
   );
 
   const [birthday, setBirthday] = useState(
-    user?.birthday ? new Date(user.birthday) : undefined
+    () => parseBirthday(user?.birthday)
   );
 
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -92,19 +87,9 @@ export default function BasicInfoScreen() {
   }
 
   // 选择出生日期
-  function handleDateChange(
-    event: { type: string },
-    selectedDate?: Date
-  ) {
-    if (Platform.OS === 'android') {
-      setShowDatePicker(false);
-    }
-
-    if (event.type === 'dismissed' || !selectedDate) {
-      return;
-    }
-
+  function handleDateConfirm(selectedDate: Date) {
     setBirthday(selectedDate);
+    setShowDatePicker(false);
     setErrors(prev => ({
       ...prev,
       birthday: undefined,
@@ -131,12 +116,14 @@ export default function BasicInfoScreen() {
       nextErrors.nickname = '昵称最多20个字符';
     }
 
-    if (!gender) {
+    if (gender !== 'male' && gender !== 'female') {
       nextErrors.gender = '请选择性别';
     }
 
-    if (!birthday) {
+    if (!birthday || Number.isNaN(birthday.getTime())) {
       nextErrors.birthday = '请选择出生日期';
+    } else if (birthday.getFullYear() < MIN_BIRTHDAY_YEAR) {
+      nextErrors.birthday = `出生日期不能早于${MIN_BIRTHDAY_YEAR}年`;
     } else if (birthday.getTime() > Date.now()) {
       nextErrors.birthday = '出生日期不能晚于今天';
     }
@@ -149,6 +136,7 @@ export default function BasicInfoScreen() {
   // 提交资料
   async function handleNextStep() {
     if (submitting) return;
+    Keyboard.dismiss();
 
     if (!validateForm()) {
       return;
@@ -206,30 +194,25 @@ export default function BasicInfoScreen() {
                 </Text>
 
                 <Text className="text-sm leading-5 text-muted-foreground">
-                  完善资料，让我们更好地了解你
+                  让我们更好地了解你
                 </Text>
               </View>
 
               {/* 头像上传 */}
               <View className="mb-8 items-center">
-                <GlassPressable
+                <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="选择个人头像"
                   onPress={handleChooseAvatar}
-                  className="relative" surfaceStyle={{ borderRadius: 48 }}
+                  className="relative"
+                  style={({ pressed }) => ({ borderRadius: 48, backgroundColor: '#DBEAFE', transform: [{ scale: pressed ? 0.98 : 1 }] })}
                 >
-                  <View className="h-24 w-24 items-center justify-center overflow-hidden rounded-full border border-border bg-transparent">
-                    {avatar ? (
-                      <Image
-                        source={{ uri: avatar }}
-                        className="h-full w-full"
-                        resizeMode="cover"
-                      />
-                    ) : (
-                      <Text className="text-5xl text-muted-foreground">
-                        ◉
-                      </Text>
-                    )}
+                  <View className="h-24 w-24 items-center justify-center overflow-hidden rounded-full border border-border" style={{ backgroundColor: '#DBEAFE' }}>
+                    <Image
+                      source={avatar ? { uri: avatar } : DEFAULT_AVATAR_SOURCE}
+                      className="h-full w-full"
+                      resizeMode="cover"
+                    />
                   </View>
 
                   <View className="absolute bottom-0 right-0 h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-foreground">
@@ -239,10 +222,10 @@ export default function BasicInfoScreen() {
                       className="text-background"
                     />
                   </View>
-                </GlassPressable>
+                </Pressable>
 
                 <Text className="mt-3 text-sm font-semibold text-foreground">
-                  点击上传真实头像
+                  点击更换头像
                 </Text>
 
                 <Text className="mt-1 text-xs text-muted-foreground">
@@ -346,7 +329,7 @@ export default function BasicInfoScreen() {
                   </View>
 
                   {errors.gender && (
-                    <Text className="text-xs text-destructive">
+                    <Text accessibilityLiveRegion="polite" className="text-xs text-destructive">
                       {errors.gender}
                     </Text>
                   )}
@@ -361,7 +344,8 @@ export default function BasicInfoScreen() {
 
                   <Pressable
                     accessibilityRole="button"
-                    onPress={() => setShowDatePicker(true)}
+                    accessibilityLabel={birthday ? `出生日期：${formatDate(birthday)}` : '选择出生日期'}
+                    onPress={() => { Keyboard.dismiss(); setShowDatePicker(true); }}
                     className={`h-12 flex-row items-center justify-between rounded-xl border bg-white px-3.5 ${
                       errors.birthday
                         ? 'border-destructive'
@@ -388,34 +372,11 @@ export default function BasicInfoScreen() {
                   </Pressable>
 
                   {errors.birthday && (
-                    <Text className="text-xs text-destructive">
+                    <Text accessibilityLiveRegion="polite" className="text-xs text-destructive">
                       {errors.birthday}
                     </Text>
                   )}
 
-                  {showDatePicker && (
-                    <DateTimePicker
-                      value={birthday ?? new Date(1998, 5, 15)}
-                      mode="date"
-                      display={
-                        Platform.OS === 'ios' ? 'spinner' : 'default'
-                      }
-                      maximumDate={new Date()}
-                      minimumDate={new Date(1900, 0, 1)}
-                      onChange={handleDateChange}
-                    />
-                  )}
-
-                  {Platform.OS === 'ios' && showDatePicker && (
-                    <Pressable
-                      onPress={() => setShowDatePicker(false)}
-                      className="self-end rounded-lg bg-foreground px-5 py-2"
-                    >
-                      <Text className="text-sm font-medium text-background">
-                        确定
-                      </Text>
-                    </Pressable>
-                  )}
                 </View>
               </GlassSurface>
             </ScrollView>
@@ -435,6 +396,9 @@ export default function BasicInfoScreen() {
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
+      {showDatePicker && (
+        <BirthdayPicker value={birthday} onConfirm={handleDateConfirm} onClose={() => setShowDatePicker(false)} />
+      )}
     </GlassScreen>
   );
 }

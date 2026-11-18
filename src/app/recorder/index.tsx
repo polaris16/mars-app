@@ -518,7 +518,7 @@ export default function RecordingPage() {
 
       await Sharing.shareAsync(item.uri, {
         mimeType: 'audio/m4a',
-        dialogTitle: '分享录音',
+        dialogTitle: '分享',
       });
     } catch (error) {
       console.error('分享录音失败：', error);
@@ -529,15 +529,15 @@ export default function RecordingPage() {
   // 更多操作
   const showMoreActions = (item: RecordingItem) => {
     Alert.alert(
-      '录音操作',
-      item.title,
+      '',
+      undefined,
       [
         {
-          text: '分享录音',
+          text: '分享',
           onPress: () => shareRecording(item),
         },
         {
-          text: '删除录音',
+          text: '删除',
           style: 'destructive',
           onPress: () => {
             if (playingId === item.id) {
@@ -665,7 +665,7 @@ export default function RecordingPage() {
             <View className="mb-4 h-8 flex-row items-center justify-between px-1">
               <View className="flex-row items-center gap-2">
                 <Text className="text-base font-bold tracking-tight" style={{ color: '#111111' }}>
-                  已完成录音
+                  已完成
                 </Text>
 
                 <View

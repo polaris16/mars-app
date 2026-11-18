@@ -131,8 +131,6 @@ export default function RecordingListPage() {
           <GlassSurface style={{ borderRadius: 28, padding: 24 }}>
             {dialogMode === 'actions' ? (
               <>
-                {/*<Text style={{ marginBottom: 6, fontSize: 17, fontWeight: '700', color: '#1B1C1C' }}>录音操作</Text>
-                <Text numberOfLines={2} style={{ marginBottom: 14, fontSize: 13, color: '#737373' }}>{selected?.title}</Text>*/}
                 <Pressable accessibilityRole="button" disabled={sharing} onPress={() => setDialogMode('rename')} style={{ minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                   <Ionicons name="pencil-outline" size={20} color="#1B1C1C" /><Text style={{ fontSize: 16, color: '#1B1C1C' }}>重命名</Text>
                 </Pressable>

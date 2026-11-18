@@ -167,7 +167,7 @@ export default function LoginScreen() {
 
               <View className="items-center py-4">
                 <View className="mb-4"><BrandLogo /></View>
-                <Text accessibilityRole="header" className="mb-1 text-[22px] font-bold leading-7 tracking-[-0.44px] text-foreground">同乐</Text>
+                <Text accessibilityRole="header" className="mb-1 text-[22px] font-bold leading-7 tracking-[-0.44px] text-foreground">美刻</Text>
                 <Text className="text-[13px] leading-[18px] text-muted-foreground">尽享精彩生活</Text>
               </View>
 
