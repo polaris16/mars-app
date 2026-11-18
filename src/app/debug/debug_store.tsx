@@ -1,3 +1,4 @@
+import { Typography } from '@/constants/typography';
 
 import { useCallback, useEffect, useState } from 'react';
 
@@ -159,14 +160,10 @@ export default function StorageDebugPage() {
   // 状态标签
   const StatusTag = ({ exists }: { exists: boolean }) => (
     <View
-      className={`rounded-md px-2.5 py-1 ${
-        exists ? 'bg-emerald-100' : 'bg-neutral-100'
-      }`}
+      className={`rounded-md px-2.5 py-1 ${ exists ? 'bg-emerald-100' : 'bg-neutral-100' }`}
     >
-      <Text
-        className={`text-xs font-semibold ${
-          exists ? 'text-emerald-700' : 'text-neutral-400'
-        }`}
+      <Text dynamicTypeRamp="caption1" style={Typography.caption1Emphasized}
+        className={`${ exists ? 'text-emerald-700' : 'text-neutral-400' }`}
       >
         {exists ? '已存储' : '不存在'}
       </Text>
@@ -182,8 +179,8 @@ export default function StorageDebugPage() {
     value: string;
   }) => (
     <View className="min-h-11 flex-row items-center justify-between border-b border-neutral-100">
-      <Text className="text-sm text-neutral-400">{label}</Text>
-      <Text className="max-w-[65%] text-right text-sm font-semibold text-neutral-700">
+      <Text dynamicTypeRamp="subheadline" style={Typography.subhead} className="text-neutral-400">{label}</Text>
+      <Text dynamicTypeRamp="subheadline" style={Typography.subheadEmphasized} className="max-w-[65%] text-right text-neutral-700">
         {value}
       </Text>
     </View>
@@ -214,10 +211,8 @@ export default function StorageDebugPage() {
         size={16}
         color={danger ? '#EF4444' : '#2563EB'}
       />
-      <Text
-        className={`text-xs font-semibold ${
-          danger ? 'text-red-500' : 'text-blue-600'
-        } ${disabled ? 'opacity-40' : ''}`}
+      <Text dynamicTypeRamp="subheadline" style={Typography.subheadEmphasized}
+        className={`${ danger ? 'text-red-500' : 'text-blue-600' } ${disabled ? 'opacity-40' : ''}`}
       >
         {title}
       </Text>
@@ -239,10 +234,10 @@ export default function StorageDebugPage() {
       {/* 标题 */}
       <View className="flex-row items-center justify-between px-5 pb-5 pt-5">
         <View>
-          <Text className="text-2xl font-bold text-neutral-900">
+          <Text dynamicTypeRamp="title1" style={Typography.title1} className="text-neutral-900">
             Storage Debug
           </Text>
-          <Text className="mt-1 text-xs text-neutral-400">
+          <Text dynamicTypeRamp="caption1" style={Typography.caption1} className="mt-1 text-neutral-400">
             SecureStore 本地存储调试
           </Text>
         </View>
@@ -269,10 +264,10 @@ export default function StorageDebugPage() {
         {/* 统计信息 */}
         <View className="mb-6 flex-row rounded-2xl bg-white p-5">
           <View className="flex-1 items-center">
-            <Text className="text-2xl font-bold text-neutral-900">
+            <Text dynamicTypeRamp="title1" style={Typography.title1} className="text-neutral-900">
               {[data.token, data.session].filter(Boolean).length}
             </Text>
-            <Text className="mt-1 text-xs text-neutral-400">
+            <Text dynamicTypeRamp="caption1" style={Typography.caption1} className="mt-1 text-neutral-400">
               已存储项目
             </Text>
           </View>
@@ -280,10 +275,10 @@ export default function StorageDebugPage() {
           <View className="w-px bg-neutral-100" />
 
           <View className="flex-1 items-center">
-            <Text className="text-2xl font-bold text-neutral-900">
+            <Text dynamicTypeRamp="title1" style={Typography.title1} className="text-neutral-900">
               2
             </Text>
-            <Text className="mt-1 text-xs text-neutral-400">
+            <Text dynamicTypeRamp="caption1" style={Typography.caption1} className="mt-1 text-neutral-400">
               认证存储 Key
             </Text>
           </View>
@@ -291,7 +286,7 @@ export default function StorageDebugPage() {
 
         {/* 用户会话信息 */}
         <View className="mb-6">
-          <Text className="mb-3 text-base font-bold text-neutral-800">
+          <Text dynamicTypeRamp="title2" style={Typography.title2} className="mb-3 text-neutral-800">
             用户会话信息
           </Text>
 
@@ -326,7 +321,7 @@ export default function StorageDebugPage() {
           <View className="mb-3 flex-row items-center justify-between">
             <View className="flex-row items-center gap-2">
               <Ionicons name="key-outline" size={20} color="#2563EB" />
-              <Text className="text-base font-bold text-neutral-800">
+              <Text dynamicTypeRamp="headline" style={Typography.headline} className="text-neutral-800">
                 Access Token
               </Text>
             </View>
@@ -335,13 +330,13 @@ export default function StorageDebugPage() {
           </View>
 
           <View className="rounded-xl bg-white p-4">
-            <Text className="mb-3 font-mono text-xs text-neutral-400">
+            <Text dynamicTypeRamp="caption1" style={Typography.caption1} className="mb-3 font-mono text-neutral-400">
               {TOKEN_KEY}
             </Text>
 
-            <Text
+            <Text dynamicTypeRamp="subheadline" style={Typography.subhead}
               selectable
-              className="py-2 text-sm leading-6 text-neutral-700"
+              className="py-2 text-neutral-700"
             >
               {!data.token
                 ? '暂无 Token'
@@ -378,7 +373,7 @@ export default function StorageDebugPage() {
                 size={21}
                 color="#2563EB"
               />
-              <Text className="text-base font-bold text-neutral-800">
+              <Text dynamicTypeRamp="headline" style={Typography.headline} className="text-neutral-800">
                 Auth Session
               </Text>
             </View>
@@ -387,7 +382,7 @@ export default function StorageDebugPage() {
           </View>
 
           <View className="rounded-xl bg-white p-4">
-            <Text className="mb-3 font-mono text-xs text-neutral-400">
+            <Text dynamicTypeRamp="caption1" style={Typography.caption1} className="mb-3 font-mono text-neutral-400">
               {SESSION_KEY}
             </Text>
 
@@ -395,7 +390,7 @@ export default function StorageDebugPage() {
               className="flex-row items-center justify-between rounded-lg bg-blue-50 px-3 py-3"
               onPress={() => setExpanded(!expanded)}
             >
-              <Text className="text-sm font-semibold text-blue-600">
+              <Text dynamicTypeRamp="subheadline" style={Typography.subheadEmphasized} className="text-blue-600">
                 {expanded ? '收起完整数据' : '查看完整数据'}
               </Text>
 
@@ -412,9 +407,9 @@ export default function StorageDebugPage() {
                 nestedScrollEnabled
                 className="mt-3 max-h-72 rounded-lg bg-neutral-900 p-3"
               >
-                <Text
+                <Text dynamicTypeRamp="caption1" style={Typography.caption1}
                   selectable
-                  className="font-mono text-xs leading-5 text-emerald-300"
+                  className="font-mono text-emerald-300"
                 >
                   {formatJSON(data.session)}
                 </Text>
@@ -440,7 +435,7 @@ export default function StorageDebugPage() {
           disabled={loading || (!data.token && !data.session)}
         >
           <Ionicons name="trash-outline" size={19} color="#FFFFFF" />
-          <Text className="text-sm font-bold text-white">
+          <Text dynamicTypeRamp="headline" style={Typography.headline} className="text-white">
             清空全部认证数据
           </Text>
         </TouchableOpacity>
@@ -451,7 +446,7 @@ export default function StorageDebugPage() {
             size={16}
             color="#9CA3AF"
           />
-          <Text className="flex-1 text-xs leading-5 text-neutral-400">
+          <Text dynamicTypeRamp="footnote" style={Typography.footnote} className="flex-1 text-neutral-400">
             清空认证数据将同时退出登录，并清除内存中的用户及角色状态。
             此功能仅建议在开发调试环境使用。
           </Text>

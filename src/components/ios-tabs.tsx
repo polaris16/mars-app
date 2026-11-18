@@ -5,11 +5,11 @@ const contentStyle = { backgroundColor: '#F9F9FF' };
 export default function IOSTabs() {
   return (
     <NativeTabs
-      tintColor="#171717"
-      iconColor={{ default: '#737373', selected: '#171717' }}
+      tintColor="#007AFF"
+      iconColor={{ default: '#737373', selected: '#007AFF' }}
       labelStyle={{
-        default: { color: '#737373', fontSize: 11, fontWeight: '500' },
-        selected: { color: '#171717', fontSize: 11, fontWeight: '600' },
+        default: { color: '#737373' },
+        selected: { color: '#007AFF' },
       }}
       minimizeBehavior="never"
       disableTransparentOnScrollEdge

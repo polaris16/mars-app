@@ -7,6 +7,7 @@ import { withStyleContext } from '@gluestack-ui/utils/nativewind-utils';
 import { styled } from 'nativewind';
 import type { VariantProps } from '@gluestack-ui/utils/nativewind-utils';
 import { UIIcon } from '@gluestack-ui/core/icon/creator';
+import { Typography } from '@/constants/typography';
 
 const SCOPE = 'INPUT';
 
@@ -33,7 +34,7 @@ const inputSlotStyle = tva({
 });
 
 const inputFieldStyle = tva({
-  base: 'flex-1 text-foreground text-sm md:text-sm py-1 h-full placeholder:text-muted-foreground  web:outline-none ios:leading-[0px] web:cursor-text web:data-[disabled=true]:cursor-not-allowed',
+  base: 'flex-1 text-foreground py-1 h-full placeholder:text-muted-foreground web:outline-none web:cursor-text web:data-[disabled=true]:cursor-not-allowed',
 });
 
 type IInputProps = React.ComponentProps<typeof UIInput> &
@@ -95,11 +96,12 @@ type IInputFieldProps = React.ComponentProps<typeof UIInput.Input> &
 const InputField = React.forwardRef<
   React.ComponentRef<typeof UIInput.Input>,
   IInputFieldProps
->(function InputField({ className, ...props }, ref) {
+>(function InputField({ className, style, ...props }, ref) {
   return (
     <UIInput.Input
       ref={ref}
       {...props}
+      style={[Typography.body, style]}
       className={inputFieldStyle({
         class: className,
       })}

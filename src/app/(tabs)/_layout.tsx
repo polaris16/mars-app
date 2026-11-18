@@ -5,8 +5,9 @@ import { Platform, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GlassSurface } from '@/components/glass-surface';
 import IOSTabs from '@/components/ios-tabs';
+import { Typography } from '@/constants/typography';
 
-const ACTIVE_COLOR = '#171717';
+const ACTIVE_COLOR = '#007AFF';
 const INACTIVE_COLOR = '#737373';
 
 export default function TabLayout() {
@@ -46,8 +47,7 @@ function GlassTabs() {
         },
 
         tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '500',
+          ...Typography.caption2,
           marginTop: 2,
         },
 

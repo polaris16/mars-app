@@ -1,10 +1,11 @@
+import { Typography } from '@/constants/typography';
 import { GlassScreen, GlassSurface } from '@/components/glass-surface';
 import { useAuth } from '@/store/AuthContext';
 import { loginWithPhoneCode, sendPhoneCode } from '@/services/authService';
 import { router } from 'expo-router';
 
 import { useEffect, useRef, useState } from 'react';
-import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, Text, View, type TextInputInstance } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, Text, View, useWindowDimensions, type TextInputInstance } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Rect } from 'react-native-svg';
 
@@ -20,6 +21,8 @@ const POLICIES = ['用户协议', '隐私政策', '登录政策'] as const;
 type Feedback = { message: string; field?: 'phone' | 'code' | 'agreement'; error?: boolean };
 
 export default function LoginScreen() {
+  const { fontScale } = useWindowDimensions();
+  const inputHeight = Math.max(48, Math.ceil(Typography.body.lineHeight * fontScale + 24));
   const phoneInput = useRef<TextInputInstance>(null);
   const codeInput = useRef<TextInputInstance>(null);
   const [phone, setPhone] = useState('');
@@ -161,26 +164,26 @@ export default function LoginScreen() {
               <View className="h-11 flex-row items-center justify-end">
                 <Button className="min-h-11 gap-1 px-0" variant="link" onPress={showHelp}>
                   <Icon as={HelpCircleIcon} size="sm" className="text-muted-foreground" />
-                  <ButtonText className="text-sm font-medium text-muted-foreground">遇到问题</ButtonText>
+                  <ButtonText dynamicTypeRamp="subheadline" style={Typography.subheadEmphasized} className="text-muted-foreground">遇到问题</ButtonText>
                 </Button>
               </View>
 
               <View className="items-center py-4">
                 <View className="mb-4"><BrandLogo /></View>
-                <Text accessibilityRole="header" className="mb-1 text-[22px] font-bold leading-7 tracking-[-0.44px] text-foreground">美刻</Text>
-                <Text className="text-[13px] leading-[18px] text-muted-foreground">尽享精彩生活</Text>
+                <Text dynamicTypeRamp="title1" style={Typography.title1} accessibilityRole="header" className="mb-1 text-foreground">美刻</Text>
+                <Text dynamicTypeRamp="subheadline" style={Typography.subhead} className="text-muted-foreground">尽享精彩生活</Text>
               </View>
 
               <GlassSurface className="gap-4 p-5" style={{ borderRadius: 28 }}>
                 <View className="gap-1">
-                  <Text className="text-xs font-medium leading-4 text-muted-foreground">手机号码</Text>
-                  <Input className="h-12 gap-0 rounded-2xl px-0 shadow-none" isInvalid={feedback?.field === 'phone'}>
+                  <Text dynamicTypeRamp="subheadline" style={Typography.subhead} className="text-muted-foreground">手机号码</Text>
+                  <Input style={{ height: inputHeight }} className="gap-0 rounded-2xl px-0 shadow-none" isInvalid={feedback?.field === 'phone'}>
                     <Button accessibilityLabel="国家或地区：中国大陆 +86" className="h-full gap-1 rounded-r-none pl-3 pr-2" variant="ghost" onPress={() => setDialog({ title: '国家或地区', message: '中国大陆（+86）\n\n目前仅支持中国大陆手机号码登录。' })}>
-                      <ButtonText className="font-medium">+86</ButtonText>
+                      <ButtonText dynamicTypeRamp="body" style={Typography.body}>+86</ButtonText>
                       <Svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="#737373" strokeWidth={2} accessible={false}><Path d="m7 10 5 5 5-5" strokeLinecap="round" strokeLinejoin="round" /></Svg>
                     </Button>
                     <View className="h-5 w-px bg-border" />
-                    <InputField
+                    <InputField style={Typography.body}
                       // The creator infers props as the ref type, but forwards a native TextInput.
                       ref={(input) => { phoneInput.current = input as unknown as TextInputInstance | null; }}
                       accessibilityLabel="手机号码，中国大陆 +86"
@@ -202,21 +205,21 @@ export default function LoginScreen() {
 
                 <View className="gap-1">
                   <View className="flex-row items-center justify-between">
-                    <Text className="text-xs font-medium leading-4 text-muted-foreground">短信验证码</Text>
-                    <Button variant="link" onPress={showHelp} hitSlop={8} className="h-4 px-0 py-0">
-                      <ButtonText className="text-xs font-medium leading-4 text-muted-foreground">收不到验证码？</ButtonText>
+                    <Text dynamicTypeRamp="subheadline" style={Typography.subhead} className="text-muted-foreground">短信验证码</Text>
+                    <Button variant="link" onPress={showHelp} hitSlop={8} className="min-h-5 px-0 py-0">
+                      <ButtonText dynamicTypeRamp="footnote" style={Typography.footnoteEmphasized} className="text-muted-foreground">收不到验证码？</ButtonText>
                     </Button>
                   </View>
-                  <Input className="h-12 gap-0 rounded-2xl pl-3 pr-1 shadow-none" isInvalid={feedback?.field === 'code'}>
+                  <Input style={{ height: inputHeight }} className="gap-0 rounded-2xl pl-3 pr-1 shadow-none" isInvalid={feedback?.field === 'code'}>
                     <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#a3a3a3" strokeWidth={1.8} accessible={false}>
                       <Path d="M12 3 3.5 6.5V12c0 5 4.5 8 8.5 9 4-1 8.5-4 8.5-9V6.5L12 3Z" strokeLinejoin="round" />
                       <Rect x={8.5} y={10} width={7} height={6} rx={1.5} /><Path d="M10 10V8a2 2 0 0 1 4 0v2" />
                     </Svg>
-                    <InputField
+                    <InputField style={Typography.body}
                       ref={(input) => { codeInput.current = input as unknown as TextInputInstance | null; }}
                       accessibilityLabel="短信验证码"
                       autoComplete={Platform.OS === 'android' ? 'sms-otp' : 'one-time-code'}
-                      className="min-w-0 px-2 tracking-widest placeholder:text-[#a3a3a3]"
+                      className="min-w-0 px-2 placeholder:text-[#a3a3a3]"
                       keyboardType="number-pad"
                       maxLength={CODE_LENGTH}
                       onChangeText={(value) => {
@@ -228,17 +231,17 @@ export default function LoginScreen() {
                       value={code}
                     />
                     <Button className="min-h-8 shrink-0 rounded-md px-3 py-1.5" isDisabled={sendingCode || secondsLeft > 0} onPress={requestCode} variant="secondary" hitSlop={{ top: 6, bottom: 6 }}>
-                      <ButtonText className="text-xs font-medium leading-4">{sendingCode ? '发送中...' : secondsLeft > 0 ? `${secondsLeft}s 后重试` : '获取验证码'}</ButtonText>
+                      <ButtonText dynamicTypeRamp="footnote" style={Typography.footnoteEmphasized}>{sendingCode ? '发送中...' : secondsLeft > 0 ? `${secondsLeft}s 后重试` : '获取验证码'}</ButtonText>
                     </Button>
                   </Input>
                 </View>
 
                 <Button
-                  className="mt-2 h-12 w-full rounded-full shadow-sm"
+                  className="mt-2 min-h-[52px] w-full rounded-full py-3 shadow-sm"
                   onPress={submit}
                   isDisabled={submitting || code.length !== CODE_LENGTH}
                 >
-                  <ButtonText className="text-sm font-semibold leading-5">
+                  <ButtonText dynamicTypeRamp="headline" style={Typography.headline}>
                     {submitting ? '登录中...' : '立即登录'}
                   </ButtonText>
 
@@ -251,7 +254,7 @@ export default function LoginScreen() {
                   )}
                 </Button>
                 {feedback && feedback.field !== 'agreement' && (
-                  <Text accessibilityLiveRegion="polite" className={feedback.error ? 'text-[13px] leading-[18px] text-destructive' : 'text-[13px] leading-[18px] text-muted-foreground'}>{feedback.message}</Text>
+                  <Text dynamicTypeRamp="footnote" style={Typography.footnote} accessibilityLiveRegion="polite" className={feedback.error ? 'text-destructive' : 'text-muted-foreground'}>{feedback.message}</Text>
                 )}
               </GlassSurface>
 
@@ -260,7 +263,7 @@ export default function LoginScreen() {
                   <Checkbox accessibilityLabel="我已阅读并同意用户协议、隐私政策及登录政策" className="mt-0.5 min-h-5 min-w-5 items-center justify-center" hitSlop={10} isInvalid={feedback?.field === 'agreement'} isChecked={agreed} value="agreement" onChange={(checked) => { setAgreed(checked); if (feedback?.field === 'agreement') setFeedback(undefined); }}>
                     <CheckboxIndicator className="shadow-none"><CheckboxIcon as={CheckIcon} /></CheckboxIndicator>
                   </Checkbox>
-                  <Text className="shrink text-center text-[13px] leading-[18px] text-muted-foreground">
+                  <Text dynamicTypeRamp="footnote" style={Typography.footnote} className="shrink text-center text-muted-foreground">
                     我已阅读并同意{' '}
                     {POLICIES.map((policy, index) => (
                       <Text key={policy}>
@@ -270,7 +273,7 @@ export default function LoginScreen() {
                     ))}
                   </Text>
                 </View>
-                {feedback?.field === 'agreement' && <Text accessibilityLiveRegion="polite" className="text-center text-xs leading-[18px] text-destructive">{feedback.message}</Text>}
+                {feedback?.field === 'agreement' && <Text dynamicTypeRamp="footnote" style={Typography.footnote} accessibilityLiveRegion="polite" className="text-center text-destructive">{feedback.message}</Text>}
               </View>
             </View>
           </ScrollView>
@@ -280,9 +283,9 @@ export default function LoginScreen() {
       <Modal isOpen={!!dialog} onClose={() => setDialog(undefined)} size="sm">
         <ModalBackdrop />
         <ModalContent className="w-[90%] max-w-[360px] rounded-2xl">
-          <ModalHeader><Text accessibilityRole="header" className="text-lg font-semibold text-foreground">{dialog?.title}</Text></ModalHeader>
-          <ModalBody><Text className="text-sm leading-[22px] text-muted-foreground">{dialog?.message}</Text></ModalBody>
-          <ModalFooter><Button className="min-h-11" onPress={() => setDialog(undefined)}><ButtonText>我知道了</ButtonText></Button></ModalFooter>
+          <ModalHeader><Text dynamicTypeRamp="headline" style={Typography.headline} accessibilityRole="header" className="text-foreground">{dialog?.title}</Text></ModalHeader>
+          <ModalBody><Text dynamicTypeRamp="body" style={Typography.body} className="text-muted-foreground">{dialog?.message}</Text></ModalBody>
+          <ModalFooter><Button className="min-h-11" onPress={() => setDialog(undefined)}><ButtonText dynamicTypeRamp="headline" style={Typography.headline}>我知道了</ButtonText></Button></ModalFooter>
         </ModalContent>
       </Modal>
     </GlassScreen>

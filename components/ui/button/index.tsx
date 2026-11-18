@@ -10,6 +10,7 @@ import {
 import { styled } from 'nativewind';
 import React from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { Typography } from '@/constants/typography';
 const SCOPE = 'BUTTON';
 const Root = withStyleContext(Pressable, SCOPE);
 const StyledUIIcon = styled(UIIcon, {
@@ -39,7 +40,7 @@ const buttonStyle = tva({
     },
     size: {
       default: 'px-4 py-2',
-      sm: 'min-h-8 rounded-md px-3 text-xs',
+      sm: 'min-h-8 rounded-md px-3',
       lg: 'min-h-10 rounded-md px-8',
       icon: 'min-h-9 min-w-9',
     },
@@ -57,10 +58,10 @@ const buttonTextStyle = tva({
       link: 'text-primary data-[hover=true]:underline data-[active=true]:underline',
     },
     size: {
-      default: 'text-sm',
-      sm: 'text-xs',
-      lg: 'text-sm',
-      icon: 'text-sm',
+      default: '',
+      sm: '',
+      lg: '',
+      icon: '',
     },
   },
 });
@@ -145,12 +146,14 @@ type IButtonTextProps = React.ComponentPropsWithoutRef<typeof UIButton.Text> &
 const ButtonText = React.forwardRef<
   React.ElementRef<typeof UIButton.Text>,
   IButtonTextProps
->(({ className, size, ...props }, ref) => {
+>(({ className, size, style, ...props }, ref) => {
   const { size: parentSize, variant: parentVariant } = useStyleContext(SCOPE);
   return (
     <UIButton.Text
+      dynamicTypeRamp="headline"
       ref={ref}
       {...props}
+      style={[Typography.headline, style]}
       className={buttonTextStyle({
         parentVariants: {
           size: parentSize,

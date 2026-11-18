@@ -1,3 +1,4 @@
+import { Typography } from '@/constants/typography';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
@@ -70,14 +71,14 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
               <BrandLogo />
             </View>
 
-            <Text accessibilityRole="header" style={styles.title}>此刻，即美好</Text>
-            <Text style={styles.description}>探索生活的新意与温度。</Text>
+            <Text dynamicTypeRamp="largeTitle" accessibilityRole="header" style={styles.title}>此刻，即美好</Text>
+            <Text dynamicTypeRamp="subheadline" style={styles.description}>探索生活的新意与温度</Text>
 
             <View style={styles.features}>
               {LIFE_HIGHLIGHTS.map(feature => (
                 <View key={feature.label} style={styles.feature}>
                   <Ionicons accessible={false} name={feature.icon} size={19} color="#525252" />
-                  <Text style={styles.featureLabel}>{feature.label}</Text>
+                  <Text dynamicTypeRamp="caption1" style={styles.featureLabel}>{feature.label}</Text>
                 </View>
               ))}
             </View>
@@ -86,7 +87,7 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
           <View style={styles.footer}>
             <GlassSurface style={styles.loading} accessibilityRole="progressbar" accessibilityLabel="正在开启美刻" accessibilityState={{ busy: true }}>
               <ActivityIndicator size="small" color="#525252" accessible={false} />
-              <Text style={styles.loadingLabel}>正在开启美刻</Text>
+              <Text dynamicTypeRamp="footnote" style={styles.loadingLabel}>正在开启美刻</Text>
             </GlassSurface>
           </View>
         </ScrollView>
@@ -100,12 +101,12 @@ const styles = StyleSheet.create({
   content: { flexGrow: 1, width: '100%', maxWidth: 480, alignSelf: 'center', paddingHorizontal: 28, paddingTop: 16, paddingBottom: 20 },
   main: { flexGrow: 1, flexShrink: 0, alignItems: 'center', justifyContent: 'center', paddingVertical: 32 },
   artwork: { width: 248, height: 200, alignItems: 'center', justifyContent: 'center' },
-  title: { marginTop: 24, fontSize: 31, lineHeight: 44, fontWeight: '700', letterSpacing: -0.8, textAlign: 'center', color: '#171717' },
-  description: { marginTop: 14, fontSize: 15, lineHeight: 25, textAlign: 'center', color: '#737373' },
+  title: { ...Typography.largeTitle, marginTop: 24, textAlign: 'center', color: '#171717' },
+  description: { ...Typography.subhead, marginTop: 14, textAlign: 'center', color: '#737373' },
   features: { width: '100%', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 24, marginTop: 32 },
   feature: { alignItems: 'center', gap: 8 },
-  featureLabel: { fontSize: 12, lineHeight: 18, color: '#525252' },
+  featureLabel: { ...Typography.caption1, color: '#525252' },
   footer: { alignItems: 'center' },
   loading: { flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 28, minHeight: 48, paddingHorizontal: 22, paddingVertical: 12 },
-  loadingLabel: { fontSize: 13, lineHeight: 20, color: '#525252', fontWeight: '500' },
+  loadingLabel: { ...Typography.footnote, color: '#525252' },
 });

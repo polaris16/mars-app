@@ -1,7 +1,8 @@
-import { GlassBackdrop, GlassSurface, GlassPressable } from '@/components/glass-surface';
+import { Typography } from '@/constants/typography';
+import { GlassBackdrop, GlassSurface } from '@/components/glass-surface';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
   Alert,
@@ -13,24 +14,13 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { saveRecording } from '@/services/recording-data';
 
 type MediaItem = ImagePicker.ImagePickerAsset & { localId: string };
 
 export default function AudioPublishPage() {
   const router = useRouter();
-  const params = useLocalSearchParams<{
-    topic?: string;
-    recordingUri?: string;
-    duration?: string;
-    recordingId?: string;
-  }>();
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [selectedMediaId, setSelectedMediaId] = useState<string | null>(null);
-  const topic = typeof params.topic === 'string' ? params.topic : '语音记录';
-  const recordingUri = typeof params.recordingUri === 'string' ? params.recordingUri : '';
-  const duration = typeof params.duration === 'string' ? params.duration : '';
-  const recordingId = typeof params.recordingId === 'string' ? params.recordingId : '';
   const photos = useMemo(() => media.filter(item => item.type !== 'video').length, [media]);
   const videos = media.length - photos;
 
@@ -59,18 +49,6 @@ export default function AudioPublishPage() {
     }
   };
 
-  const finish = () => {
-    saveRecording({
-      id: recordingId || `${Date.now()}`,
-      title: topic,
-      time: `今天 ${new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false })}`,
-      duration: duration || '00:00',
-      quality: '48 kHz',
-      uri: recordingUri,
-    });
-    router.replace('/recorder/list');
-  };
-
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F9F9FF' }} edges={['top', 'bottom']}>
       <GlassBackdrop />
@@ -89,13 +67,13 @@ export default function AudioPublishPage() {
           showsVerticalScrollIndicator={false}
         >
           <View style={{ marginBottom: 24, paddingTop: 8 }}>
-            <Text style={{ marginBottom: 6, fontSize: 22, fontWeight: '700', color: '#0A0A0A' }}>更多</Text>
-            <Text style={{ fontSize: 13, lineHeight: 20, color: '#737373' }}>添加照片与视频，沉淀更生动的记忆。</Text>
+            <Text dynamicTypeRamp="title1" style={{ ...Typography.title1, marginBottom: 6, color: '#0A0A0A' }}>更多</Text>
+            <Text dynamicTypeRamp="subheadline" style={{ ...Typography.subhead, color: '#737373' }}>添加照片与视频，沉淀更生动的记忆。</Text>
           </View>
 
           {media.length > 0 && (
             <View style={{ marginBottom: 16, alignItems: 'flex-end' }}>
-              <Text style={{ fontSize: 12, color: '#737373' }}>{photos} 照片 · {videos} 视频</Text>
+              <Text dynamicTypeRamp="caption1" style={{ ...Typography.caption1, color: '#737373' }}>{photos} 照片 · {videos} 视频</Text>
             </View>
           )}
 
@@ -111,11 +89,11 @@ export default function AudioPublishPage() {
                   <Ionicons name="images-outline" size={27} color="#171717" />
                   <View style={{ position: 'absolute', right: -2, top: -2, height: 20, width: 20, alignItems: 'center', justifyContent: 'center', borderRadius: 10, backgroundColor: '#171717' }}><Ionicons name="add" size={14} color="white" /></View>
                 </View>
-                <Text style={{ marginTop: 4, fontSize: 18, fontWeight: '700', color: '#0A0A0A' }}>点击添加照片或视频</Text>
+                <Text dynamicTypeRamp="headline" style={{ ...Typography.headline, marginTop: 4, color: '#0A0A0A' }}>点击添加照片或视频</Text>
               </Pressable>
               <View style={{ marginTop: 20, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <Ionicons name="shield-checkmark-outline" size={15} color="#A3A3A3" />
-                <Text style={{ fontSize: 12, color: '#737373' }}>最多可添加 9 项 · 支持 JPG / PNG / MP4</Text>
+                <Text dynamicTypeRamp="footnote" style={{ ...Typography.footnote, color: '#737373' }}>最多可添加 9 项 · 支持 JPG / PNG / MP4</Text>
               </View>
             </GlassSurface>
           ) : (
@@ -132,7 +110,7 @@ export default function AudioPublishPage() {
                   >
                     <Image source={{ uri: item.uri }} className="h-full w-full" resizeMode="cover" />
                     {item.type === 'video' && <View pointerEvents="none" className="absolute inset-0 items-center justify-center"><View className="h-9 w-9 items-center justify-center rounded-full bg-black/60"><Ionicons name="play" size={18} color="white" /></View></View>}
-                    <View pointerEvents="none" className="absolute bottom-0 left-0 right-0 bg-black/50 px-1.5 py-1"><Text numberOfLines={1} className="text-[10px] text-white">{item.fileName ?? (item.type === 'video' ? '视频' : '照片')}</Text></View>
+                    <View pointerEvents="none" className="absolute bottom-0 left-0 right-0 bg-black/50 px-1.5 py-1"><Text dynamicTypeRamp="caption1" style={Typography.caption1} numberOfLines={1} className="text-white">{item.fileName ?? (item.type === 'video' ? '视频' : '照片')}</Text></View>
                   </Pressable>
                   {selectedMediaId === item.localId && (
                     <Pressable
@@ -151,17 +129,10 @@ export default function AudioPublishPage() {
                   )}
                 </View>
               ))}
-              {media.length < 9 && <Pressable onPress={addMedia} className="w-[31.5%] items-center justify-center rounded-xl bg-[#F1F3FC]" style={{ aspectRatio: 1 }}><View className="h-9 w-9 items-center justify-center rounded-full bg-[#E0E2EB]"><Ionicons name="add" size={21} color="#414753" /></View><Text className="mt-1.5 text-[11px] font-medium text-[#737373]">添加</Text></Pressable>}
+              {media.length < 9 && <Pressable onPress={addMedia} className="w-[31.5%] items-center justify-center rounded-xl bg-[#F1F3FC]" style={{ aspectRatio: 1 }}><View className="h-9 w-9 items-center justify-center rounded-full bg-[#E0E2EB]"><Ionicons name="add" size={21} color="#414753" /></View><Text dynamicTypeRamp="caption1" style={Typography.caption1Emphasized} className="mt-1.5 text-[#737373]">添加</Text></Pressable>}
             </View>
           )}
-
         </ScrollView>
-
-        <View style={{ flexShrink: 0, paddingTop: 8 }}>
-          <GlassPressable onPress={finish} tone="dark" surfaceClassName="h-[52px] flex-row items-center justify-center gap-2" surfaceStyle={{ borderRadius: 28 }}>
-            <Text className="text-[15px] font-semibold text-white">完成</Text><Ionicons name="arrow-forward" size={18} color="white" />
-          </GlassPressable>
-        </View>
       </View>
     </SafeAreaView>
   );

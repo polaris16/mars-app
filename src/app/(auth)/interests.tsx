@@ -1,3 +1,4 @@
+import { Typography } from '@/constants/typography';
 import { GlassScreen, GlassSurface, GlassPressable } from '@/components/glass-surface';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -150,21 +151,21 @@ export default function InterestsScreen() {
 
             {/* 标题区域 */}
             <View className="mb-8 gap-2">
-              <Text className="text-[26px] font-bold leading-9 tracking-tight text-foreground">
+              <Text dynamicTypeRamp="title1" style={Typography.title1} className="text-foreground">
                 挑选你感兴趣的领域
               </Text>
 
               <View className="flex-row items-center justify-between gap-2">
-                <Text className="flex-1 text-sm leading-5 text-muted-foreground">
+                <Text dynamicTypeRamp="subheadline" style={Typography.subhead} className="flex-1 text-muted-foreground">
                   请选择 {minSelection}-{maxSelection} 个标签，让我们更好地了解你
                 </Text>
 
                 <View className="flex-row items-center rounded-full border border-border bg-[#F5F5F5] px-3 py-1.5">
-                  <Text className="text-xs font-bold text-foreground">
+                  <Text dynamicTypeRamp="caption1" style={Typography.caption1Emphasized} className="text-foreground">
                     {selectedCount}
                   </Text>
 
-                  <Text className="text-xs text-muted-foreground">
+                  <Text dynamicTypeRamp="caption1" style={Typography.caption1} className="text-muted-foreground">
                     /{maxSelection}
                   </Text>
                 </View>
@@ -176,17 +177,17 @@ export default function InterestsScreen() {
               {loading ? (
                 <View className="w-full items-center py-10">
                   <ActivityIndicator size="small" color="#171717" />
-                  <Text className="mt-3 text-sm text-muted-foreground">正在加载兴趣领域...</Text>
+                  <Text dynamicTypeRamp="subheadline" style={Typography.subhead} className="mt-3 text-muted-foreground">正在加载兴趣领域...</Text>
                 </View>
               ) : loadError ? (
                 <View className="w-full items-center py-8">
-                  <Text className="text-sm text-destructive">{loadError}</Text>
+                  <Text dynamicTypeRamp="subheadline" style={Typography.subhead} className="text-destructive">{loadError}</Text>
                   <Pressable onPress={() => { setLoadError(null); setLoading(true); setReloadKey(key => key + 1); }} className="mt-3 rounded-full bg-foreground px-5 py-2.5">
-                    <Text className="text-sm font-medium text-background">重试</Text>
+                    <Text dynamicTypeRamp="headline" style={Typography.headline} className="text-background">重试</Text>
                   </Pressable>
                 </View>
               ) : interestOptions.length === 0 ? (
-                <Text className="w-full py-8 text-center text-sm text-muted-foreground">暂无可选兴趣领域</Text>
+                <Text dynamicTypeRamp="subheadline" style={Typography.subhead} className="w-full py-8 text-center text-muted-foreground">暂无可选兴趣领域</Text>
               ) : interestOptions.map(option => {
                 const selected = selectedInterestIds.includes(option.id);
 
@@ -202,22 +203,14 @@ export default function InterestsScreen() {
                     surfaceStyle={{ borderRadius: 999 }}
                     surfaceClassName="min-h-11 flex-row items-center justify-center gap-1.5 rounded-full border px-4 py-2.5"
                   >
-                    <Text
-                      className={`text-sm font-semibold ${
-                        selected
-                          ? 'text-background'
-                          : 'text-muted-foreground'
-                      }`}
+                    <Text dynamicTypeRamp="subheadline" style={Typography.subheadEmphasized}
+                      className={`${ selected ? 'text-background' : 'text-muted-foreground' }`}
                     >
                       {selected ? '✓' : '+'}
                     </Text>
 
-                    <Text
-                      className={`text-sm font-medium ${
-                        selected
-                          ? 'text-background'
-                          : 'text-foreground'
-                      }`}
+                    <Text dynamicTypeRamp="subheadline" style={Typography.subheadEmphasized}
+                      className={`${ selected ? 'text-background' : 'text-foreground' }`}
                     >
                       {option.name}
                     </Text>
@@ -228,25 +221,25 @@ export default function InterestsScreen() {
 
             {/* 选择状态 */}
             <View className="mt-7 items-center gap-2">
-              <Text className="text-xs font-medium text-muted-foreground">
+              <Text dynamicTypeRamp="footnote" style={Typography.footnote} className="text-muted-foreground">
                 已选择 {selectedCount} 个标签
               </Text>
 
               {selectedCount < minSelection && interestOptions.length > 0 && (
-                <Text className="text-xs text-muted-foreground">
+                <Text dynamicTypeRamp="footnote" style={Typography.footnote} className="text-muted-foreground">
                   还需选择 {minSelection - selectedCount} 个
                 </Text>
               )}
 
               {selectedCount >= minSelection &&
                 selectedCount <= maxSelection && interestOptions.length > 0 && (
-                  <Text className="text-xs font-medium text-foreground">
+                  <Text dynamicTypeRamp="footnote" style={Typography.footnoteEmphasized} className="text-foreground">
                     已满足推荐要求
                   </Text>
                 )}
 
               {selectedCount > maxSelection && (
-                <Text className="text-xs text-destructive">
+                <Text dynamicTypeRamp="footnote" style={Typography.footnote} className="text-destructive">
                   请减少 {selectedCount - maxSelection} 个标签
                 </Text>
               )}
@@ -257,11 +250,11 @@ export default function InterestsScreen() {
           {/* 底部操作区域 */}
           <GlassSurface className="p-3" style={{ marginHorizontal: 16, marginBottom: 12, borderRadius: 38 }}>
             <Button
-              className="h-[52px] w-full rounded-full bg-[#171717]"
+              className="min-h-[52px] w-full rounded-full py-3 bg-[#171717]"
               onPress={handleComplete}
               isDisabled={!canContinue}
             >
-              <ButtonText className="text-base font-semibold text-white">
+              <ButtonText dynamicTypeRamp="headline" style={Typography.headline} className="text-white">
                 {submitting ? '保存中...' : '开启'}
               </ButtonText>
 

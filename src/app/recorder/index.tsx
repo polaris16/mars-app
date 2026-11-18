@@ -1,3 +1,4 @@
+import { Typography } from '@/constants/typography';
 import { GlassBackdrop, GlassSurface, GlassPressable } from '@/components/glass-surface';
 
 import { Ionicons } from '@expo/vector-icons';
@@ -123,10 +124,9 @@ function RecordingCard({
       <View className="flex-row items-start gap-2">
         <View className="min-w-0 flex-1 gap-1">
           <View className="flex-row items-center gap-2">
-            <Text
-              className="flex-1 text-sm font-bold"
-              numberOfLines={1}
-              style={{ color: '#111111' }}
+            <Text dynamicTypeRamp="headline"
+              className="flex-1"
+              style={{ ...Typography.headline, color: '#111111' }}
             >
               {item.title}
             </Text>
@@ -135,26 +135,26 @@ function RecordingCard({
               className="shrink-0 rounded-md border px-1.5 py-0.5"
               style={{ backgroundColor: '#F3F4F6', borderColor: '#E5E7EB' }}
             >
-              <Text className="text-[10px] font-medium" style={{ color: '#4B5563' }}>
+              <Text dynamicTypeRamp="caption1" style={{ ...Typography.caption1, color: '#4B5563' }}>
                 已转文字
               </Text>
             </View>
           </View>
 
           <View className="flex-row flex-wrap items-center gap-2">
-            <Text className="text-xs" style={{ color: '#4B5563' }}>
+            <Text dynamicTypeRamp="footnote" style={{ ...Typography.footnote, color: '#4B5563' }}>
               {item.time}
             </Text>
 
-            <Text className="text-xs" style={{ color: '#4B5563' }}>•</Text>
+            <Text dynamicTypeRamp="footnote" style={{ ...Typography.footnote, color: '#4B5563' }}>•</Text>
 
-            <Text className="text-xs font-medium" style={{ color: '#2b2b2b' }}>
+            <Text dynamicTypeRamp="footnote" style={{ ...Typography.footnoteEmphasized, color: '#2b2b2b' }}>
               {item.duration}
             </Text>
 
-            <Text className="text-xs" style={{ color: '#4B5563' }}>•</Text>
+            <Text dynamicTypeRamp="footnote" style={{ ...Typography.footnote, color: '#4B5563' }}>•</Text>
 
-            <Text className="text-xs" style={{ color: '#4B5563' }}>
+            <Text dynamicTypeRamp="footnote" style={{ ...Typography.footnote, color: '#4B5563' }}>
               {item.quality}
             </Text>
           </View>
@@ -254,7 +254,7 @@ function RecordingSheet({
           </View>
 
           {/* 计时器 */}
-          <Text className="my-3 text-center text-[44px] font-bold tracking-tight" style={{ color: '#111111' }}>
+          <Text dynamicTypeRamp="largeTitle" className="my-3 text-center" style={{ ...Typography.largeTitle, fontVariant: ['tabular-nums'], color: '#111111' }}>
             {formatTime(seconds)}
           </Text>
 
@@ -274,19 +274,19 @@ function RecordingSheet({
           </View>
 
           {/* 录音参数 */}
-          <View className="mt-4 flex-row items-center justify-center gap-4">
+          <View className="mt-4 flex-row flex-wrap items-center justify-center gap-4">
             <View className="flex-row items-center gap-1.5">
               <Ionicons
                 name="stats-chart-outline"
                 size={15}
                 color="#737373"
               />
-              <Text className="text-xs font-medium" style={{ color: '#4B5563' }}>
+              <Text dynamicTypeRamp="footnote" style={{ ...Typography.footnote, color: '#4B5563' }}>
                 48.0 kHz
               </Text>
             </View>
 
-            <Text className="text-neutral-300">•</Text>
+            <Text dynamicTypeRamp="footnote" style={Typography.footnote} className="text-neutral-300">•</Text>
 
             <View className="flex-row items-center gap-1.5">
               <Ionicons
@@ -294,7 +294,7 @@ function RecordingSheet({
                 size={15}
                 color="#737373"
               />
-              <Text className="text-xs font-medium" style={{ color: '#4B5563' }}>
+              <Text dynamicTypeRamp="footnote" style={{ ...Typography.footnote, color: '#4B5563' }}>
                 智能降噪开启
               </Text>
             </View>
@@ -304,10 +304,10 @@ function RecordingSheet({
           <View className="mt-7 w-full">
             <Pressable
               onPress={onStop}
-              className="h-[52px] w-full flex-row items-center justify-center gap-2 rounded-full bg-neutral-900 active:bg-neutral-700"
+              className="min-h-[52px] w-full flex-row items-center justify-center gap-2 rounded-full bg-neutral-900 px-4 py-3 active:bg-neutral-700"
             >
               <View className="h-3.5 w-3.5 rounded-sm bg-white" />
-              <Text className="text-sm font-semibold text-white">
+              <Text dynamicTypeRamp="headline" style={Typography.headline} className="text-white">
                 停止录音
               </Text>
             </Pressable>
@@ -629,13 +629,13 @@ export default function RecordingPage() {
 
           <Button
             size="sm"
-            className="h-9 rounded-full bg-neutral-900 px-4 active:bg-neutral-700"
+            className="min-h-11 rounded-full bg-neutral-900 px-4 py-2 active:bg-neutral-700"
             isDisabled={!canProceed}
             accessibilityState={{ disabled: !canProceed }}
             onPress={handleNext}
           >
-            <ButtonText className="text-[13px] font-medium text-white">
-              下一步
+            <ButtonText dynamicTypeRamp="headline" style={Typography.headline} className="text-white">
+              更多
             </ButtonText>
             <Ionicons
               name="arrow-forward"
@@ -662,21 +662,8 @@ export default function RecordingPage() {
             }}
           >
             {/* 列表标题 */}
-            <View className="mb-4 h-8 flex-row items-center justify-between px-1">
-              <View className="flex-row items-center gap-2">
-                <Text className="text-base font-bold tracking-tight" style={{ color: '#111111' }}>
-                  已完成
-                </Text>
-
-                <View
-                  className="rounded-full border px-2 py-0.5"
-                  style={{ backgroundColor: '#F3F4F6', borderColor: '#E5E7EB' }}
-                >
-                  <Text className="text-[11px] font-medium" style={{ color: '#4B5563' }}>
-                    {recordings.length}
-                  </Text>
-                </View>
-              </View>
+            <View className="mb-4 min-h-8 flex-row items-center justify-between px-1">
+              <Text dynamicTypeRamp="caption1" style={{ ...Typography.caption1, color: '#747878' }}>共 {recordings.length} 条</Text>
             </View>
 
             {/* 录音卡片列表 */}
@@ -706,11 +693,11 @@ export default function RecordingPage() {
                     />
                   </View>
 
-                  <Text className="text-sm font-medium" style={{ color: '#111111' }}>
+                  <Text dynamicTypeRamp="headline" style={{ ...Typography.headline, color: '#111111' }}>
                     暂无录音
                   </Text>
 
-                  <Text className="mt-2 text-center text-xs leading-5" style={{ color: '#4B5563' }}>
+                  <Text dynamicTypeRamp="subheadline" className="mt-2 text-center" style={{ ...Typography.subhead, color: '#4B5563' }}>
                     随心记录灵感、对话与心声，支持自动生成文字与智能降噪
                   </Text>
                 </GlassSurface>
@@ -746,14 +733,14 @@ export default function RecordingPage() {
             </View>
 
             {/* 提示文字 */}
-            <View pointerEvents="none" className="flex-row items-center gap-1.5">
+            <View pointerEvents="none" className="flex-row flex-wrap items-center justify-center gap-1.5">
               <Ionicons
                 name="information-circle-outline"
                 size={15}
                 color="#737373"
               />
 
-              <Text className="text-xs text-muted-foreground">
+              <Text dynamicTypeRamp="footnote" style={Typography.footnote} className="text-muted-foreground">
                 {isRecording
                   ? '录音中，再次点击停止并保存'
                   : sheetVisible

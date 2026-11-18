@@ -1,3 +1,4 @@
+import { Typography } from '@/constants/typography';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -163,7 +164,7 @@ export default function HomeScreen() {
       return (
         <View className="flex-row items-center justify-center gap-2 py-5">
           <ActivityIndicator size="small" color="#737373" />
-          <Text className="text-xs text-[#737373]">正在加载更多话题...</Text>
+          <Text dynamicTypeRamp="caption1" style={Typography.caption1} className="text-[#737373]">正在加载更多话题...</Text>
         </View>
       );
     }
@@ -177,7 +178,7 @@ export default function HomeScreen() {
           }}
           className="items-center justify-center py-5"
         >
-          <Text className="text-xs text-[#DC2626]">
+          <Text dynamicTypeRamp="footnote" style={Typography.footnote} className="text-[#DC2626]">
             {loadMoreError}，点击重试
           </Text>
         </Pressable>
@@ -187,7 +188,7 @@ export default function HomeScreen() {
     if (!hasMore && topics.length > 0) {
       return (
         <View className="items-center justify-center py-6">
-          <Text className="text-xs text-[#A3A3A3]">— 没有更多数据了 —</Text>
+          <Text dynamicTypeRamp="caption1" style={Typography.caption1} className="text-[#A3A3A3]">— 没有更多数据了 —</Text>
         </View>
       );
     }
@@ -200,7 +201,7 @@ export default function HomeScreen() {
       return (
         <View className="items-center justify-center py-20">
           <ActivityIndicator size="large" color="#171717" />
-          <Text className="mt-3 text-xs text-[#737373]">正在获取推荐话题...</Text>
+          <Text dynamicTypeRamp="caption1" style={Typography.caption1} className="mt-3 text-[#737373]">正在获取推荐话题...</Text>
         </View>
       );
     }
@@ -209,12 +210,12 @@ export default function HomeScreen() {
       return (
         <View className="items-center justify-center gap-3 py-16">
           <Ionicons name="alert-circle-outline" size={40} color="#DC2626" />
-          <Text className="text-center text-sm text-[#737373] px-6">{error}</Text>
+          <Text dynamicTypeRamp="subheadline" style={Typography.subhead} className="text-center text-[#737373] px-6">{error}</Text>
           <Pressable
             onPress={() => loadTopics(1)}
             className="mt-2 rounded-full bg-[#171717] px-5 py-2.5"
           >
-            <Text className="text-xs font-semibold text-white">点击重试</Text>
+            <Text dynamicTypeRamp="headline" style={Typography.headline} className="text-white">点击重试</Text>
           </Pressable>
         </View>
       );
@@ -222,9 +223,9 @@ export default function HomeScreen() {
 
     return (
       <View className="items-center justify-center gap-2 py-16">
-        <Text className="text-sm text-[#737373]">暂无推荐话题</Text>
+        <Text dynamicTypeRamp="body" style={Typography.body} className="text-[#737373]">暂无推荐话题</Text>
         <Pressable onPress={() => loadTopics(1)} className="mt-2">
-          <Text className="text-xs text-[#2563EB]">刷新试试</Text>
+          <Text dynamicTypeRamp="body" style={Typography.body} className="text-[#2563EB]">刷新试试</Text>
         </Pressable>
       </View>
     );
@@ -236,10 +237,10 @@ export default function HomeScreen() {
       onPress={() => openRecorder(item.title)}
       surfaceStyle={styles.topic}
     >
-      <View style={styles.topicIcon}><Text style={styles.topicSymbol}>{getTopicIcon(item, index)}</Text></View>
+      <View style={styles.topicIcon}><Text dynamicTypeRamp="title2" style={styles.topicSymbol}>{getTopicIcon(item, index)}</Text></View>
       <View style={styles.topicContent}>
-        <View style={styles.topicHeading}><Text style={styles.topicTitle}>{item.title}</Text><Text style={styles.topicCount}>{formatParticipantCount(item.participant_count)}</Text></View>
-        <Text numberOfLines={2} style={styles.topicDescription}>{item.summary || item.prompt}</Text>
+        <View style={styles.topicHeading}><Text dynamicTypeRamp="headline" style={styles.topicTitle}>{item.title}</Text><Text dynamicTypeRamp="caption1" style={styles.topicCount}>{formatParticipantCount(item.participant_count)}</Text></View>
+        <Text dynamicTypeRamp="subheadline" style={styles.topicDescription}>{item.summary || item.prompt}</Text>
       </View>
       <Ionicons name="arrow-forward" size={18} color="#737373" />
     </GlassPressable>
@@ -265,7 +266,7 @@ export default function HomeScreen() {
           ListHeaderComponent={<>
           <View style={styles.header}>
             <View style={styles.brand}>
-              <View><Text style={styles.brandName}>美刻</Text><Text style={styles.caption}>此刻，即美好</Text></View>
+              <View><Text dynamicTypeRamp="title3" style={styles.brandName}>美刻</Text><Text dynamicTypeRamp="footnote" style={styles.caption}>此刻，即美好</Text></View>
             </View>
             <GlassPressable
               accessibilityLabel="录音列表"
@@ -278,19 +279,19 @@ export default function HomeScreen() {
           </View>
 
           <GlassSurface style={styles.hero}>
-            <Text style={styles.heroTitle}>你的生活，{'\n'}值得被听见。</Text>
-            <Text style={styles.heroDescription}>不必准备，让想说的话自然发生。</Text>
+            <Text dynamicTypeRamp="title1" style={styles.heroTitle}>你的生活，{'\n'}值得被听见。</Text>
+            <Text dynamicTypeRamp="subheadline" style={styles.heroDescription}>不必准备，让想说的话自然发生。</Text>
             <View accessible={false} style={styles.wave}>
               {[12, 23, 16, 32, 20, 42, 28, 18, 34, 48, 30, 20, 38, 26, 16, 30, 44, 24, 14, 26, 18, 10].map((height, index) => <View key={index} style={[styles.waveBar, { height, backgroundColor: index > 7 && index < 15 ? '#171717' : '#D4D4D4' }]} />)}
             </View>
             <GlassPressable tone="dark" accessibilityLabel="说两句，开始自由畅聊" onPress={() => openRecorder('自由畅聊 / 即兴倾诉')} style={styles.recordAction} surfaceStyle={styles.recordButton}>
-              <Ionicons name="mic-outline" size={21} color="#FFFFFF" /><Text style={styles.recordLabel}>说两句</Text>
+              <Ionicons name="mic-outline" size={21} color="#FFFFFF" /><Text dynamicTypeRamp="headline" style={styles.recordLabel}>说两句</Text>
             </GlassPressable>
           </GlassSurface>
 
           <View style={styles.sectionHeader}>
-            <View><Text style={styles.sectionTitle}>推荐话题</Text><Text style={styles.sectionDescription}>选一个话题，留住此刻的灵感</Text></View>
-            <GlassSurface tone="muted" style={styles.featured}><Text style={styles.badgeText}>今日精选</Text></GlassSurface>
+            <View style={styles.sectionHeading}><Text dynamicTypeRamp="title2" style={styles.sectionTitle}>推荐话题</Text><Text dynamicTypeRamp="subheadline" style={styles.sectionDescription}>选一个话题，留住此刻的灵感</Text></View>
+            <GlassSurface tone="muted" style={styles.featured}><Text dynamicTypeRamp="caption1" style={styles.badgeText}>今日精选</Text></GlassSurface>
           </View>
           </>}
         />
@@ -309,28 +310,29 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   recordingsButton: { width: 44, height: 44, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  brandName: { fontSize: 20, fontWeight: '700', color: '#0A0A0A' },
-  caption: { fontSize: 11, color: '#737373', lineHeight: 18 },
+  brandName: { ...Typography.title3, color: '#0A0A0A' },
+  caption: { ...Typography.footnote, color: '#737373' },
   hero: { padding: 22, borderRadius: 28, marginBottom: 30 },
-  badgeText: { color: '#737373', fontSize: 11, fontWeight: '500' },
-  heroTitle: { color: '#0A0A0A', fontSize: 27, lineHeight: 38, fontWeight: '700', letterSpacing: -0.8 },
-  heroDescription: { color: '#737373', fontSize: 13, marginTop: 9, lineHeight: 21 },
+  badgeText: { ...Typography.caption1, color: '#737373' },
+  heroTitle: { ...Typography.title1, color: '#0A0A0A' },
+  heroDescription: { ...Typography.subhead, color: '#737373', marginTop: 9 },
   wave: { flexDirection: 'row', height: 76, alignItems: 'center', justifyContent: 'space-between', marginTop: 12, gap: 4 },
   waveBar: { width: 4, borderRadius: 3 },
-  sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 16 },
-  sectionTitle: { color: '#0A0A0A', fontSize: 21, fontWeight: '700' },
-  sectionDescription: { color: '#737373', fontSize: 12, marginTop: 6, lineHeight: 18 },
+  sectionHeader: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16 },
+  sectionHeading: { flexGrow: 1, flexShrink: 1, flexBasis: 220 },
+  sectionTitle: { ...Typography.title2, color: '#0A0A0A' },
+  sectionDescription: { ...Typography.subhead, color: '#737373', marginTop: 6 },
   featured: { borderRadius: 20, paddingHorizontal: 11, paddingVertical: 7 },
   topicSeparator: { height: 12 },
   topic: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 22 },
   topicIcon: { width: 44, height: 48, backgroundColor: 'rgba(245,245,245,0.85)', borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
-  topicSymbol: { fontSize: 23, color: '#171717' },
+  topicSymbol: { ...Typography.title2, color: '#171717' },
   topicContent: { flex: 1, gap: 6 },
   topicHeading: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 },
-  topicTitle: { fontSize: 15, fontWeight: '600', color: '#0A0A0A' },
-  topicCount: { fontSize: 10, color: '#737373' },
-  topicDescription: { fontSize: 11, lineHeight: 17, color: '#737373' },
+  topicTitle: { ...Typography.headline, flexShrink: 1, color: '#0A0A0A' },
+  topicCount: { ...Typography.caption1, color: '#737373' },
+  topicDescription: { ...Typography.subhead, color: '#737373' },
   recordAction: { width: '100%', marginTop: 8 },
   recordButton: { minHeight: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 22, paddingVertical: 14, borderRadius: 18 },
-  recordLabel: { fontSize: 14, fontWeight: '600', color: '#FFFFFF' },
+  recordLabel: { ...Typography.headline, color: '#FFFFFF' },
 });

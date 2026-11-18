@@ -1,3 +1,4 @@
+import { Typography } from '@/constants/typography';
 import { GlassScreen, GlassSurface } from '@/components/glass-surface';
 import { BirthdayPicker } from '@/components/birthday-picker';
 import { DEFAULT_AVATAR_SOURCE } from '@/constants/avatar';
@@ -189,11 +190,11 @@ export default function BasicInfoScreen() {
 
               {/* 页面标题 */}
               <View className="mb-7 gap-1.5">
-                <Text className="text-2xl font-bold tracking-tight text-foreground">
+                <Text dynamicTypeRamp="title1" style={Typography.title1} className="text-foreground">
                   完善个人资料
                 </Text>
 
-                <Text className="text-sm leading-5 text-muted-foreground">
+                <Text dynamicTypeRamp="subheadline" style={Typography.subhead} className="text-muted-foreground">
                   让我们更好地了解你
                 </Text>
               </View>
@@ -224,11 +225,11 @@ export default function BasicInfoScreen() {
                   </View>
                 </Pressable>
 
-                <Text className="mt-3 text-sm font-semibold text-foreground">
+                <Text dynamicTypeRamp="subheadline" style={Typography.subheadEmphasized} className="mt-3 text-foreground">
                   点击更换头像
                 </Text>
 
-                <Text className="mt-1 text-xs text-muted-foreground">
+                <Text dynamicTypeRamp="caption1" style={Typography.caption1} className="mt-1 text-muted-foreground">
                   支持 JPG、PNG、WebP，最大 5MB
                 </Text>
               </View>
@@ -238,17 +239,17 @@ export default function BasicInfoScreen() {
                 {/* 昵称 */}
                 <View className="gap-2">
                   <View className="flex-row items-center justify-between">
-                    <Text className="text-sm font-medium text-foreground">
+                    <Text dynamicTypeRamp="subheadline" style={Typography.subhead} className="text-foreground">
                       姓名 / 昵称
                       <Text className="text-destructive"> *</Text>
                     </Text>
 
-                    <Text className="text-xs text-muted-foreground">
+                    <Text dynamicTypeRamp="caption1" style={Typography.caption1} className="text-muted-foreground">
                       {nickname.length}/{MAX_NICKNAME_LENGTH}
                     </Text>
                   </View>
 
-                  <TextInput
+                  <TextInput style={Typography.body}
                     value={nickname}
                     onChangeText={value => {
                       setNickname(
@@ -264,15 +265,11 @@ export default function BasicInfoScreen() {
                     placeholderTextColor="#A3A3A3"
                     maxLength={MAX_NICKNAME_LENGTH}
                     returnKeyType="done"
-                    className={`h-12 rounded-xl border bg-white px-3.5 text-sm text-foreground ${
-                      errors.nickname
-                        ? 'border-destructive'
-                        : 'border-border'
-                    }`}
+                    className={`min-h-12 rounded-xl border bg-white px-3.5 py-3 text-foreground ${ errors.nickname ? 'border-destructive' : 'border-border' }`}
                   />
 
                   {errors.nickname && (
-                    <Text className="text-xs text-destructive">
+                    <Text dynamicTypeRamp="footnote" style={Typography.footnote} className="text-destructive">
                       {errors.nickname}
                     </Text>
                   )}
@@ -280,7 +277,7 @@ export default function BasicInfoScreen() {
 
                 {/* 性别 */}
                 <View className="gap-2">
-                  <Text className="text-sm font-medium text-foreground">
+                  <Text dynamicTypeRamp="subheadline" style={Typography.subhead} className="text-foreground">
                     性别
                     <Text className="text-destructive"> *</Text>
                   </Text>
@@ -298,28 +295,16 @@ export default function BasicInfoScreen() {
                           accessibilityRole="radio"
                           accessibilityState={{ checked: selected }}
                           onPress={() => handleSelectGender(item.value)}
-                          className={`h-12 flex-1 flex-row items-center justify-center gap-2 rounded-xl border ${
-                            selected
-                              ? 'border-foreground bg-foreground'
-                              : 'border-border bg-[#F5F5F5]'
-                          }`}
+                          className={`min-h-12 py-3 flex-1 flex-row items-center justify-center gap-2 rounded-xl border ${ selected ? 'border-foreground bg-foreground' : 'border-border bg-[#F5F5F5]' }`}
                         >
-                          <Text
-                            className={`text-lg ${
-                              selected
-                                ? 'text-background'
-                                : 'text-foreground'
-                            }`}
+                          <Text dynamicTypeRamp="title3" style={Typography.title3}
+                            className={`${ selected ? 'text-background' : 'text-foreground' }`}
                           >
                             {item.symbol}
                           </Text>
 
-                          <Text
-                            className={`text-sm font-medium ${
-                              selected
-                                ? 'text-background'
-                                : 'text-foreground'
-                            }`}
+                          <Text dynamicTypeRamp="body" style={Typography.body}
+                            className={`${ selected ? 'text-background' : 'text-foreground' }`}
                           >
                             {item.label}
                           </Text>
@@ -329,7 +314,7 @@ export default function BasicInfoScreen() {
                   </View>
 
                   {errors.gender && (
-                    <Text accessibilityLiveRegion="polite" className="text-xs text-destructive">
+                    <Text dynamicTypeRamp="footnote" style={Typography.footnote} accessibilityLiveRegion="polite" className="text-destructive">
                       {errors.gender}
                     </Text>
                   )}
@@ -337,7 +322,7 @@ export default function BasicInfoScreen() {
 
                 {/* 出生日期 */}
                 <View className="gap-2">
-                  <Text className="text-sm font-medium text-foreground">
+                  <Text dynamicTypeRamp="subheadline" style={Typography.subhead} className="text-foreground">
                     出生日期
                     <Text className="text-destructive"> *</Text>
                   </Text>
@@ -346,18 +331,10 @@ export default function BasicInfoScreen() {
                     accessibilityRole="button"
                     accessibilityLabel={birthday ? `出生日期：${formatDate(birthday)}` : '选择出生日期'}
                     onPress={() => { Keyboard.dismiss(); setShowDatePicker(true); }}
-                    className={`h-12 flex-row items-center justify-between rounded-xl border bg-white px-3.5 ${
-                      errors.birthday
-                        ? 'border-destructive'
-                        : 'border-border'
-                    }`}
+                    className={`min-h-12 py-3 flex-row items-center justify-between rounded-xl border bg-white px-3.5 ${ errors.birthday ? 'border-destructive' : 'border-border' }`}
                   >
-                    <Text
-                      className={`text-sm ${
-                        birthday
-                          ? 'text-foreground'
-                          : 'text-muted-foreground'
-                      }`}
+                    <Text dynamicTypeRamp="body" style={Typography.body}
+                      className={`${ birthday ? 'text-foreground' : 'text-muted-foreground' }`}
                     >
                       {birthday
                         ? formatDate(birthday)
@@ -372,7 +349,7 @@ export default function BasicInfoScreen() {
                   </Pressable>
 
                   {errors.birthday && (
-                    <Text accessibilityLiveRegion="polite" className="text-xs text-destructive">
+                    <Text dynamicTypeRamp="footnote" style={Typography.footnote} accessibilityLiveRegion="polite" className="text-destructive">
                       {errors.birthday}
                     </Text>
                   )}
@@ -384,11 +361,11 @@ export default function BasicInfoScreen() {
             {/* 底部按钮 */}
             <GlassSurface className="p-3" style={{ marginHorizontal: 16, marginBottom: 12, borderRadius: 38 }}>
               <Button
-                className="h-[52px] w-full rounded-full bg-[#171717]"
+                className="min-h-[52px] w-full rounded-full py-3 bg-[#171717]"
                 onPress={handleNextStep}
                 isDisabled={submitting}
               >
-                <ButtonText className="text-base font-semibold text-white">
+                <ButtonText dynamicTypeRamp="headline" style={Typography.headline} className="text-white">
                   {submitting ? '保存中...' : '下一步 →'}
                 </ButtonText>
               </Button>
