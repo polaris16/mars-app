@@ -23,3 +23,7 @@ export const saveRecording = (recording: SavedRecording) => {
 export const renameRecording = (id: string, title: string) => {
   recordings = recordings.map(item => item.id === id ? { ...item, title } : item);
 };
+
+export const deleteRecording = (id: string) => {
+  recordings = recordings.filter(item => item.id !== id);
+};

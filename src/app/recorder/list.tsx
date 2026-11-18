@@ -1,9 +1,11 @@
 import { GlassBackdrop, GlassSurface } from '@/components/glass-surface';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
+import * as Sharing from 'expo-sharing';
 import { useCallback, useState } from 'react';
 import {
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StatusBar,
@@ -12,29 +14,75 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getRecordings, renameRecording, type SavedRecording } from '@/services/recording-data';
+import { deleteRecording, getRecordings, renameRecording, type SavedRecording } from '@/services/recording-data';
 
 export default function RecordingListPage() {
   const router = useRouter();
   const [recordings, setRecordings] = useState<SavedRecording[]>(getRecordings());
-  const [editing, setEditing] = useState<SavedRecording | null>(null);
+  const [selected, setSelected] = useState<SavedRecording | null>(null);
+  const [dialogMode, setDialogMode] = useState<'actions' | 'rename' | 'delete'>('actions');
   const [title, setTitle] = useState('');
+  const [sharing, setSharing] = useState(false);
+  const [shareError, setShareError] = useState('');
 
   useFocusEffect(useCallback(() => {
     setRecordings([...getRecordings()]);
   }, []));
 
-  const openRename = (recording: SavedRecording) => {
-    setEditing(recording);
+  const openActions = (recording: SavedRecording) => {
+    setSelected(recording);
+    setDialogMode('actions');
     setTitle(recording.title);
+    setShareError('');
+  };
+
+  const closeDialog = () => {
+    if (!sharing) setSelected(null);
   };
 
   const commitRename = () => {
     const nextTitle = title.trim();
-    if (!editing || !nextTitle) return;
-    renameRecording(editing.id, nextTitle);
+    if (!selected || !nextTitle) return;
+    renameRecording(selected.id, nextTitle);
     setRecordings([...getRecordings()]);
-    setEditing(null);
+    setSelected(null);
+  };
+
+  const commitDelete = () => {
+    if (!selected) return;
+    deleteRecording(selected.id);
+    setRecordings([...getRecordings()]);
+    setSelected(null);
+  };
+
+  const shareRecording = async () => {
+    if (!selected || sharing) return;
+    setShareError('');
+    if (!selected.uri) {
+      setShareError('这条记录尚无音频文件，暂时无法分享。');
+      return;
+    }
+    if (Platform.OS === 'web') {
+      setShareError('请在手机 App 中分享录音文件。');
+      return;
+    }
+
+    setSharing(true);
+    try {
+      if (!await Sharing.isAvailableAsync()) {
+        setShareError('当前设备不支持文件分享。');
+        return;
+      }
+      await Sharing.shareAsync(selected.uri, {
+        mimeType: 'audio/m4a',
+        dialogTitle: '分享',
+      });
+    } catch (error) {
+      console.error('分享录音失败：', error);
+      setShareError('无法分享该录音文件，请稍后重试。');
+    } finally {
+      setSharing(false);
+    }
   };
 
   return (
@@ -45,7 +93,7 @@ export default function RecordingListPage() {
         <Pressable onPress={() => router.back()} accessibilityLabel="返回" style={{ width: 40, height: 40, alignItems: 'center', justifyContent: 'center' }}>
           <Ionicons name="chevron-back" size={23} color="#1B1C1C" />
         </Pressable>
-        <Text style={{ marginLeft: 4, fontSize: 20, fontWeight: '700', color: '#1B1C1C' }}>录音列表</Text>
+        <Text style={{ marginLeft: 4, fontSize: 20, fontWeight: '700', color: '#1B1C1C' }}>记录</Text>
       </View>
 
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 10, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
@@ -69,7 +117,7 @@ export default function RecordingListPage() {
                 </View>
                 <Text style={{ marginTop: 6, fontSize: 12, color: '#737373' }}>{recording.time} · {recording.duration}</Text>
               </View>
-              <Pressable onPress={() => openRename(recording)} hitSlop={8} accessibilityLabel="重命名" style={{ width: 32, height: 32, marginTop: -6, alignItems: 'center', justifyContent: 'center' }}>
+              <Pressable onPress={event => { event.stopPropagation(); openActions(recording); }} hitSlop={8} accessibilityRole="button" accessibilityLabel={`更多录音操作：${recording.title}`} style={{ width: 44, height: 44, marginTop: -6, alignItems: 'center', justifyContent: 'center' }}>
                 <Ionicons name="ellipsis-horizontal" size={20} color="#747878" />
               </Pressable>
             </View>
@@ -78,15 +126,44 @@ export default function RecordingListPage() {
         ))}
       </ScrollView>
 
-      <Modal visible={Boolean(editing)} transparent animationType="fade" onRequestClose={() => setEditing(null)}>
+      <Modal visible={Boolean(selected)} transparent animationType="fade" onRequestClose={closeDialog}>
         <View style={{ flex: 1, justifyContent: 'center', padding: 28, backgroundColor: 'rgba(0,0,0,0.38)' }}>
           <GlassSurface style={{ borderRadius: 28, padding: 24 }}>
-            <Text style={{ marginBottom: 14, fontSize: 17, fontWeight: '700', color: '#1B1C1C' }}>重命名录音</Text>
-            <TextInput value={title} onChangeText={setTitle} autoFocus selectTextOnFocus maxLength={60} returnKeyType="done" onSubmitEditing={commitRename} style={{ borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 15, color: '#1B1C1C' }} />
-            <View style={{ marginTop: 18, flexDirection: 'row', justifyContent: 'flex-end', gap: 10 }}>
-              <Pressable onPress={() => setEditing(null)} style={{ paddingHorizontal: 14, paddingVertical: 10 }}><Text style={{ color: '#737373' }}>取消</Text></Pressable>
-              <Pressable onPress={commitRename} style={{ borderRadius: 999, backgroundColor: '#171717', paddingHorizontal: 18, paddingVertical: 10 }}><Text style={{ fontWeight: '600', color: '#FFFFFF' }}>保存</Text></Pressable>
-            </View>
+            {dialogMode === 'actions' ? (
+              <>
+                {/*<Text style={{ marginBottom: 6, fontSize: 17, fontWeight: '700', color: '#1B1C1C' }}>录音操作</Text>
+                <Text numberOfLines={2} style={{ marginBottom: 14, fontSize: 13, color: '#737373' }}>{selected?.title}</Text>*/}
+                <Pressable accessibilityRole="button" disabled={sharing} onPress={() => setDialogMode('rename')} style={{ minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  <Ionicons name="pencil-outline" size={20} color="#1B1C1C" /><Text style={{ fontSize: 16, color: '#1B1C1C' }}>重命名</Text>
+                </Pressable>
+                <Pressable accessibilityRole="button" disabled={sharing} onPress={shareRecording} style={{ minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  <Ionicons name="share-outline" size={20} color="#1B1C1C" /><Text style={{ fontSize: 16, color: '#1B1C1C' }}>{sharing ? '正在分享…' : '分享'}</Text>
+                </Pressable>
+                {shareError ? <Text accessibilityLiveRegion="polite" style={{ marginBottom: 8, fontSize: 13, lineHeight: 20, color: '#B42318' }}>{shareError}</Text> : null}
+                <Pressable accessibilityRole="button" disabled={sharing} onPress={() => setDialogMode('delete')} style={{ minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  <Ionicons name="trash-outline" size={20} color="#B42318" /><Text style={{ fontSize: 16, color: '#B42318' }}>删除</Text>
+                </Pressable>
+                <Pressable accessibilityRole="button" disabled={sharing} onPress={closeDialog} style={{ minHeight: 48, marginTop: 8, alignItems: 'center', justifyContent: 'center' }}><Text style={{ fontSize: 15, color: '#737373' }}>取消</Text></Pressable>
+              </>
+            ) : dialogMode === 'delete' ? (
+              <>
+                <Text style={{ marginBottom: 14, fontSize: 17, fontWeight: '700', color: '#1B1C1C' }}>删除</Text>
+                <Text style={{ fontSize: 15, lineHeight: 22, color: '#737373' }}>确定删除「{selected?.title}」吗？删除后无法恢复。</Text>
+                <View style={{ marginTop: 18, flexDirection: 'row', justifyContent: 'flex-end', gap: 10 }}>
+                  <Pressable accessibilityRole="button" onPress={closeDialog} style={{ minHeight: 44, paddingHorizontal: 14, justifyContent: 'center' }}><Text style={{ color: '#737373' }}>取消</Text></Pressable>
+                  <Pressable accessibilityRole="button" onPress={commitDelete} style={{ minHeight: 44, borderRadius: 999, backgroundColor: '#B42318', paddingHorizontal: 18, justifyContent: 'center' }}><Text style={{ fontWeight: '600', color: '#FFFFFF' }}>删除</Text></Pressable>
+                </View>
+              </>
+            ) : (
+              <>
+                <Text style={{ marginBottom: 14, fontSize: 17, fontWeight: '700', color: '#1B1C1C' }}>重命名</Text>
+                <TextInput value={title} onChangeText={setTitle} autoFocus selectTextOnFocus maxLength={60} returnKeyType="done" onSubmitEditing={commitRename} style={{ borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 15, color: '#1B1C1C' }} />
+                <View style={{ marginTop: 18, flexDirection: 'row', justifyContent: 'flex-end', gap: 10 }}>
+                  <Pressable onPress={closeDialog} style={{ paddingHorizontal: 14, paddingVertical: 10 }}><Text style={{ color: '#737373' }}>取消</Text></Pressable>
+                  <Pressable onPress={commitRename} style={{ borderRadius: 999, backgroundColor: '#171717', paddingHorizontal: 18, paddingVertical: 10 }}><Text style={{ fontWeight: '600', color: '#FFFFFF' }}>保存</Text></Pressable>
+                </View>
+              </>
+            )}
           </GlassSurface>
         </View>
       </Modal>

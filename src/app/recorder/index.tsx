@@ -253,32 +253,6 @@ function RecordingSheet({
             <View className="h-1 w-10 rounded-full bg-neutral-300" />
           </View>
 
-          {/* 状态栏 */}
-          <View className="mt-4 w-full flex-row items-center justify-between">
-            <View
-              className="flex-row items-center gap-2 rounded-full border px-3 py-2"
-              style={{ backgroundColor: '#F3F4F6', borderColor: '#E5E7EB' }}
-            >
-              <View
-                className={`h-2 w-2 rounded-full ${
-                  isRecording ? 'bg-red-600' : 'bg-neutral-400'
-                }`}
-              />
-
-              <Text className="text-xs font-semibold" style={{ color: '#4B5563' }}>
-                {isRecording ? '正在录制...' : '录音已暂停'}
-              </Text>
-            </View>
-
-            <View className="h-8 w-8 items-center justify-center rounded-full">
-              <Ionicons
-                name="chevron-down"
-                size={23}
-                color="#737373"
-              />
-            </View>
-          </View>
-
           {/* 计时器 */}
           <Text className="my-3 text-center text-[44px] font-bold tracking-tight" style={{ color: '#111111' }}>
             {formatTime(seconds)}
@@ -338,10 +312,6 @@ function RecordingSheet({
               </Text>
             </Pressable>
           </View>
-
-          <Text className="mt-3 text-center text-xs" style={{ color: '#4B5563' }}>
-            录音结束后将自动保存到列表中
-          </Text>
         </GlassSurface>
       </View>
     </Modal>
@@ -380,6 +350,9 @@ export default function RecordingPage() {
   const [recordings, setRecordings] = useState<RecordingItem[]>([]);
   const [waveHeights, setWaveHeights] = useState(REST_WAVE);
   const [playingId, setPlayingId] = useState<string | null>(null);
+  const [recordingControlsHeight, setRecordingControlsHeight] = useState(160);
+
+  const canProceed = Boolean(recordings[0]?.uri) && !isRecording && !sheetVisible;
 
   const playerRef = useRef<ReturnType<typeof createAudioPlayer> | null>(null);
 
@@ -593,13 +566,13 @@ export default function RecordingPage() {
 
   // 下一步
   const handleNext = () => {
-    if (isRecording) {
-      Alert.alert('提示', '请先完成或暂停当前录音。');
+    if (isRecording || sheetVisible) {
+      Alert.alert('提示', '请先结束当前录音。');
       return;
     }
 
     const recording = recordings[0];
-    if (!recording) {
+    if (!recording?.uri) {
       Alert.alert('暂无录音', '请先完成一段录音，再继续发布。');
       return;
     }
@@ -657,6 +630,8 @@ export default function RecordingPage() {
           <Button
             size="sm"
             className="h-9 rounded-full bg-neutral-900 px-4 active:bg-neutral-700"
+            isDisabled={!canProceed}
+            accessibilityState={{ disabled: !canProceed }}
             onPress={handleNext}
           >
             <ButtonText className="text-[13px] font-medium text-white">
@@ -682,7 +657,8 @@ export default function RecordingPage() {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{
               flexGrow: 1,
-              paddingBottom: 16,
+              // 留出浮动控制区及间距，让最后一条录音可以滚动到按钮上方。
+              paddingBottom: recordingControlsHeight + 24,
             }}
           >
             {/* 列表标题 */}
@@ -746,10 +722,15 @@ export default function RecordingPage() {
           {/* 底部录音控制区 */}
           {/* ================================= */}
 
-          <View className="items-center justify-center gap-4 pb-4 pt-3">
+          <View
+            pointerEvents="box-none"
+            onLayout={event => setRecordingControlsHeight(event.nativeEvent.layout.height)}
+            className="items-center justify-center gap-4 pb-4 pt-3"
+            style={{ position: 'absolute', left: 20, right: 20, bottom: 8 }}
+          >
 
             {/* 主录音按钮 */}
-            <View className="h-24 w-full items-center justify-center">
+            <View pointerEvents="box-none" className="h-24 w-full items-center justify-center">
               <GlassPressable
                 onPress={handleMasterButton}
                 tone="dark" accessibilityLabel={isRecording ? '停止并保存录音' : '开始录音'}
@@ -765,7 +746,7 @@ export default function RecordingPage() {
             </View>
 
             {/* 提示文字 */}
-            <View className="flex-row items-center gap-1.5">
+            <View pointerEvents="none" className="flex-row items-center gap-1.5">
               <Ionicons
                 name="information-circle-outline"
                 size={15}
