@@ -4,6 +4,7 @@ import { ContentSurface } from '@/components/content-surface';
 import { BirthdayPicker } from '@/components/birthday-picker';
 import { DEFAULT_AVATAR_SOURCE } from '@/constants/avatar';
 import { useInputHeight } from '@/hooks/use-input-height';
+import { useTheme } from '@/hooks/use-theme';
 import { formatDate, MIN_BIRTHDAY_YEAR, parseBirthday } from '@/utils/profile-date';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
@@ -34,6 +35,7 @@ const MAX_AVATAR_SIZE = 5 * 1024 * 1024;
 
 export default function BasicInfoScreen() {
   const inputHeight = useInputHeight();
+  const { accentBlueSubtle } = useTheme();
   const { user, completeBasicInfo } = useAuth();
 
   const [avatar, setAvatar] = useState(user?.avatar ?? '');
@@ -209,9 +211,9 @@ export default function BasicInfoScreen() {
                   accessibilityLabel="选择个人头像"
                   onPress={handleChooseAvatar}
                   className="relative"
-                  style={({ pressed }) => ({ borderRadius: 48, backgroundColor: '#DBEAFE', opacity: pressed ? 0.7 : 1 })}
+                  style={({ pressed }) => ({ borderRadius: 48, opacity: pressed ? 0.7 : 1 })}
                 >
-                  <View className="h-24 w-24 items-center justify-center overflow-hidden rounded-full border border-border" style={{ backgroundColor: '#DBEAFE' }}>
+                  <View className="h-24 w-24 items-center justify-center overflow-hidden rounded-full border border-border" style={{ backgroundColor: accentBlueSubtle }}>
                     <Image
                       source={avatar ? { uri: avatar } : DEFAULT_AVATAR_SOURCE}
                       className="h-full w-full"

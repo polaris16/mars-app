@@ -1,7 +1,9 @@
 import { Typography } from '@/constants/typography';
 import { SCREEN_BACKGROUND } from '@/constants/colors';
-import { GlassPressable } from '@/components/glass-surface';
+import { GlassBackToolbar } from '@/components/glass-back-toolbar';
+import { GlassPressable, GlassToolbar } from '@/components/glass-surface';
 import { useGlassAccessibility } from '@/components/ui/liquid-glass';
+import { useTheme } from '@/hooks/use-theme';
 
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -27,8 +29,6 @@ import {
 } from 'expo-audio';
 
 import * as Sharing from 'expo-sharing';
-
-import { Button } from '@/components/ui/button';
 
 interface RecordingItem {
   id: string;
@@ -232,6 +232,7 @@ function RecordingSheet({
 }) {
   const insets = useSafeAreaInsets();
   const { reduceMotion } = useGlassAccessibility();
+  const { accentBlue, accentBlueMuted } = useTheme();
   return (
     <Modal
       visible={visible}
@@ -271,7 +272,7 @@ function RecordingSheet({
                 style={{
                   width: 3,
                   height,
-                  backgroundColor: isRecording ? '#005CB8' : '#AEC7F7',
+                  backgroundColor: isRecording ? accentBlue : accentBlueMuted,
                   borderRadius: 4,
                 }}
               />
@@ -359,7 +360,9 @@ export default function RecordingPage() {
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [recordingControlsHeight, setRecordingControlsHeight] = useState(160);
 
-  const canProceed = Boolean(recordings[0]?.uri) && !isRecording && !sheetVisible;
+  const latestRecording = recordings[0];
+  const canProceed = Boolean(latestRecording?.uri) && !isRecording && !sheetVisible;
+  const photoIconColor = canProceed ? '#171717' : '#8E8E93';
 
   const playerRef = useRef<ReturnType<typeof createAudioPlayer> | null>(null);
 
@@ -533,6 +536,16 @@ export default function RecordingPage() {
     }
   };
 
+  const removeRecording = (item: RecordingItem) => {
+    if (playingId === item.id) {
+      playerRef.current?.remove();
+      playerRef.current = null;
+      setPlayingId(null);
+    }
+
+    setRecordings(previous => previous.filter(record => record.id !== item.id));
+  };
+
   // 更多操作
   const showMoreActions = (item: RecordingItem) => {
     Alert.alert(
@@ -546,17 +559,7 @@ export default function RecordingPage() {
         {
           text: '删除',
           style: 'destructive',
-          onPress: () => {
-            if (playingId === item.id) {
-              playerRef.current?.remove();
-              playerRef.current = null;
-              setPlayingId(null);
-            }
-
-            setRecordings(previous =>
-              previous.filter(record => record.id !== item.id)
-            );
-          },
+          onPress: () => removeRecording(item),
         },
         {
           text: '取消',
@@ -578,7 +581,7 @@ export default function RecordingPage() {
       return;
     }
 
-    const recording = recordings[0];
+    const recording = latestRecording;
     if (!recording?.uri) {
       Alert.alert('暂无录音', '请先完成一段录音，再继续发布。');
       return;
@@ -621,42 +624,28 @@ export default function RecordingPage() {
         {/* ================================= */}
 
         <View className="min-h-16 flex-row items-center justify-between gap-3 px-4 py-2">
-          <View className="min-w-0 flex-1 flex-row items-center">
-            <Pressable
-              onPress={handleBack}
-              accessibilityRole="button"
-              accessibilityLabel="返回"
-              className="h-11 w-11 shrink-0 items-center justify-center active:opacity-60"
-            >
-              <Ionicons
-                name="chevron-back"
-                size={23}
-                color="#181C22"
-              />
-            </Pressable>
-            <Text
-              accessibilityRole="header"
-              dynamicTypeRamp="headline"
-              style={{ ...Typography.headline, marginLeft: 4, flexShrink: 1, color: '#1B1C1C' }}
-            >
-              记录
-            </Text>
-          </View>
+          <GlassBackToolbar title="记录" onBack={handleBack} />
 
-          <Button
-            size="icon"
-            className="h-11 w-11 rounded-full bg-neutral-900 p-0 active:bg-neutral-700"
-            isDisabled={!canProceed}
-            accessibilityLabel="添加照片或视频"
-            accessibilityState={{ disabled: !canProceed }}
-            onPress={handleNext}
-          >
-            <Ionicons
-              name="add"
-              size={24}
-              color="#FFFFFF"
-            />
-          </Button>
+          <GlassToolbar accessibilityLabel="录音工具栏" style={{ columnGap: 8 }}>
+            <Pressable
+              disabled={!canProceed}
+              accessibilityRole="button"
+              accessibilityLabel="添加照片或视频"
+              accessibilityState={{ disabled: !canProceed }}
+              onPress={handleNext}
+              className="h-11 w-11 items-center justify-center rounded-full active:bg-neutral-900/10"
+            >
+              <Ionicons name="images-outline" size={24} color={photoIconColor} />
+            </Pressable>
+
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="更多操作"
+              className="h-11 w-11 items-center justify-center rounded-full active:bg-neutral-900/10"
+            >
+              <Ionicons name="ellipsis-horizontal" size={24} color="#171717" />
+            </Pressable>
+          </GlassToolbar>
         </View>
 
         {/* ================================= */}
@@ -735,14 +724,13 @@ export default function RecordingPage() {
               <GlassPressable
                 onPress={handleMasterButton}
                 accessibilityLabel={isRecording ? '停止录音并保存' : sheetVisible ? '继续录音' : '开始录音'}
-                tone="dark"
                 surfaceClassName="h-20 w-20 items-center justify-center"
                 surfaceStyle={{ borderRadius: 40 }}
               >
                 <Ionicons
                   name={isRecording ? 'stop' : 'mic'}
                   size={34}
-                  color="#FFFFFF"
+                  color="#171717"
                 />
               </GlassPressable>
             </View>

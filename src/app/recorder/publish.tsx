@@ -1,5 +1,6 @@
 import { Typography } from '@/constants/typography';
 import { ContentSurface } from '@/components/content-surface';
+import { GlassBackToolbar } from '@/components/glass-back-toolbar';
 import { SCREEN_BACKGROUND } from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -61,16 +62,7 @@ export default function AudioPublishPage() {
       <StatusBar barStyle="dark-content" />
 
       <View style={{ minHeight: 64, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8 }}>
-        <Pressable onPress={() => router.back()} className="h-11 w-11 shrink-0 items-center justify-center" accessibilityRole="button" accessibilityLabel="返回">
-          <Ionicons name="chevron-back" size={23} color="#181C22" />
-        </Pressable>
-        <Text
-          accessibilityRole="header"
-          dynamicTypeRamp="headline"
-          style={{ ...Typography.headline, marginLeft: 4, flexShrink: 1, color: '#1B1C1C' }}
-        >
-          素材
-        </Text>
+        <GlassBackToolbar title="素材" onBack={() => router.back()} />
       </View>
 
       <View style={{ flex: 1, width: '100%', maxWidth: 680, alignSelf: 'center', paddingHorizontal: 20, paddingBottom: 12 }}>

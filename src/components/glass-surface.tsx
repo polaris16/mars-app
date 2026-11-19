@@ -1,7 +1,7 @@
 import { GlassView } from '@/components/ui/liquid-glass';
 import { SCREEN_BACKGROUND } from '@/constants/colors';
 import { Pressable, StyleSheet, View, type PressableProps, type ViewProps } from 'react-native';
-import type { ComponentProps } from 'react';
+import type { ComponentProps, PropsWithChildren } from 'react';
 
 type GlassSurfaceProps = ComponentProps<typeof GlassView> & { tone?: 'light' | 'dark' | 'muted' };
 
@@ -25,15 +25,26 @@ type GlassPressableProps = PressableProps & {
   surfaceClassName?: string;
 };
 
-export function GlassPressable({ children, tone, surfaceStyle, surfaceClassName, style, ...props }: GlassPressableProps) {
-  return <Pressable accessibilityRole="button" {...props} style={state => [
+export function GlassPressable({ children, disabled, tone, surfaceStyle, surfaceClassName, style, ...props }: GlassPressableProps) {
+  return <Pressable accessibilityRole="button" disabled={disabled} {...props} style={state => [
     typeof style === 'function' ? style(state) : style,
     state.pressed && { opacity: 0.7 },
   ]}>
-    {state => <GlassSurface isInteractive tone={tone} className={surfaceClassName} style={surfaceStyle}>
+    {state => <GlassSurface isInteractive={!disabled} tone={tone} className={surfaceClassName} style={surfaceStyle}>
       {typeof children === 'function' ? children(state) : children}
     </GlassSurface>}
   </Pressable>;
+}
+
+export function GlassToolbar({ children, accessibilityLabel, style }: PropsWithChildren<{
+  accessibilityLabel: string;
+  style?: ViewProps['style'];
+}>) {
+  return (
+    <GlassSurface role="toolbar" accessibilityLabel={accessibilityLabel} style={[styles.toolbar, style]}>
+      {children}
+    </GlassSurface>
+  );
 }
 
 export function GlassScreen({ children, style, ...props }: ViewProps) {
@@ -52,5 +63,13 @@ const styles = StyleSheet.create({
     shadowRadius: 18,
   },
   dark: { borderColor: '#404040', borderTopColor: '#606060' },
+  toolbar: {
+    flexDirection: 'row',
+    flexShrink: 0,
+    alignItems: 'center',
+    paddingHorizontal: 3,
+    paddingVertical: 1,
+    borderRadius: 24,
+  },
   screen: { flex: 1, backgroundColor: SCREEN_BACKGROUND },
 });

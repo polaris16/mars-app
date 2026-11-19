@@ -1,5 +1,6 @@
 import { Typography } from '@/constants/typography';
 import { SCREEN_BACKGROUND } from '@/constants/colors';
+import { useTheme } from '@/hooks/use-theme';
 
 import { useCallback, useEffect, useState } from 'react';
 
@@ -43,6 +44,7 @@ interface SessionInfo {
 }
 
 export default function StorageDebugPage() {
+  const { accentBlue, accentBlueSubtle } = useTheme();
   const { logout } = useAuth();
 
   const [data, setData] = useState<StorageData>({
@@ -211,10 +213,10 @@ export default function StorageDebugPage() {
       <Ionicons
         name={icon}
         size={16}
-        color={danger ? '#B42318' : '#2563EB'}
+        color={danger ? '#B42318' : accentBlue}
       />
-      <Text dynamicTypeRamp="subheadline" style={Typography.subheadEmphasized}
-        className={`${ danger ? 'text-red-700' : 'text-blue-600' } ${disabled ? 'opacity-40' : ''}`}
+      <Text dynamicTypeRamp="subheadline" style={[Typography.subheadEmphasized, !danger && { color: accentBlue }]}
+        className={`${danger ? 'text-red-700' : ''} ${disabled ? 'opacity-40' : ''}`}
       >
         {title}
       </Text>
@@ -245,7 +247,8 @@ export default function StorageDebugPage() {
         </View>
 
         <TouchableOpacity
-          className="h-11 w-11 items-center justify-center rounded-xl bg-blue-600"
+          className="h-11 w-11 items-center justify-center rounded-xl"
+          style={{ backgroundColor: accentBlue }}
           onPress={loadStorage}
           disabled={loading}
         >
@@ -322,7 +325,7 @@ export default function StorageDebugPage() {
         <View className="mb-6">
           <View className="mb-3 flex-row items-center justify-between">
             <View className="flex-row items-center gap-2">
-              <Ionicons name="key-outline" size={20} color="#2563EB" />
+              <Ionicons name="key-outline" size={20} color={accentBlue} />
               <Text dynamicTypeRamp="headline" style={Typography.headline} className="text-neutral-800">
                 Access Token
               </Text>
@@ -373,7 +376,7 @@ export default function StorageDebugPage() {
               <Ionicons
                 name="person-circle-outline"
                 size={21}
-                color="#2563EB"
+                color={accentBlue}
               />
               <Text dynamicTypeRamp="headline" style={Typography.headline} className="text-neutral-800">
                 Auth Session
@@ -389,17 +392,18 @@ export default function StorageDebugPage() {
             </Text>
 
             <TouchableOpacity
-              className="flex-row items-center justify-between rounded-lg bg-blue-50 px-3 py-3"
+              className="flex-row items-center justify-between rounded-lg px-3 py-3"
+              style={{ backgroundColor: accentBlueSubtle }}
               onPress={() => setExpanded(!expanded)}
             >
-              <Text dynamicTypeRamp="subheadline" style={Typography.subheadEmphasized} className="text-blue-600">
+              <Text dynamicTypeRamp="subheadline" style={[Typography.subheadEmphasized, { color: accentBlue }]}>
                 {expanded ? '收起完整数据' : '查看完整数据'}
               </Text>
 
               <Ionicons
                 name={expanded ? 'chevron-up' : 'chevron-down'}
                 size={18}
-                color="#2563EB"
+                color={accentBlue}
               />
             </TouchableOpacity>
 

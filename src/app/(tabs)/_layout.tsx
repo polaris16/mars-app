@@ -7,8 +7,8 @@ import { GlassSurface } from '@/components/glass-surface';
 import IOSTabs from '@/components/ios-tabs';
 import { Typography } from '@/constants/typography';
 import { SCREEN_BACKGROUND } from '@/constants/colors';
+import { useTheme } from '@/hooks/use-theme';
 
-const ACTIVE_COLOR = '#005CB8';
 const INACTIVE_COLOR = '#616161';
 
 export default function TabLayout() {
@@ -17,6 +17,7 @@ export default function TabLayout() {
 
 function GlassTabs() {
   const insets = useSafeAreaInsets();
+  const { accentBlue } = useTheme();
   return (
     <Tabs
       screenOptions={{
@@ -26,7 +27,7 @@ function GlassTabs() {
           backgroundColor: SCREEN_BACKGROUND,
         },
 
-        tabBarActiveTintColor: ACTIVE_COLOR,
+        tabBarActiveTintColor: accentBlue,
         tabBarInactiveTintColor: INACTIVE_COLOR,
         tabBarActiveBackgroundColor: 'rgba(245,245,245,0.9)',
         tabBarHideOnKeyboard: true,

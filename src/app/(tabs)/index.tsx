@@ -5,8 +5,9 @@ import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { GlassScreen } from '@/components/glass-surface';
+import { GlassPressable, GlassScreen } from '@/components/glass-surface';
 import { ContentPressable, ContentSurface } from '@/components/content-surface';
+import { useTheme } from '@/hooks/use-theme';
 
 import { getRecommendedTopics } from '@/services/topicService';
 import type { TopicItem } from '@/types/topic';
@@ -57,6 +58,7 @@ function formatParticipantCount(count: number): string {
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
+  const { accentBlue, accentBlueMuted } = useTheme();
   const { fontScale } = useWindowDimensions();
   const largeText = fontScale >= 1.5;
   const openRecorder = (topic: string) => router.push({ pathname: '/recorder', params: { topic } });
@@ -229,7 +231,7 @@ export default function HomeScreen() {
       <View className="items-center justify-center gap-2 py-16">
         <Text dynamicTypeRamp="body" style={Typography.body} className="text-[#616161]">暂无推荐话题</Text>
         <Pressable onPress={() => loadTopics(1)} className="mt-2 min-h-11 justify-center" accessibilityRole="button">
-          <Text dynamicTypeRamp="body" style={Typography.body} className="text-[#2563EB]">刷新试试</Text>
+          <Text dynamicTypeRamp="body" style={[Typography.body, { color: accentBlue }]}>刷新试试</Text>
         </Pressable>
       </View>
     );
@@ -272,21 +274,22 @@ export default function HomeScreen() {
             <View style={[styles.brand, { flex: 1, minWidth: 0 }]}>
               <View style={{ flex: 1 }}><Text accessibilityRole="header" dynamicTypeRamp="largeTitle" style={styles.brandName}>美刻</Text><Text dynamicTypeRamp="subheadline" style={styles.caption}>此刻，即美好</Text></View>
             </View>
-            <ContentPressable
+            <GlassPressable
               accessibilityLabel="录音列表"
-              accessibilityRole="button"
               onPress={() => router.push('/recorder/list')}
               surfaceStyle={styles.recordingsButton}
             >
               <Ionicons name="list-outline" size={20} color="#404040" />
-            </ContentPressable>
+            </GlassPressable>
           </View>
 
           <ContentSurface style={styles.hero}>
             <Text dynamicTypeRamp="title1" style={styles.heroTitle}>用声音，{'\n'}收藏生活</Text>
             <Text dynamicTypeRamp="subheadline" style={styles.heroDescription}>不必准备，让想说的话自然发生</Text>
             <View accessible={false} style={styles.wave}>
-              {[12, 23, 16, 32, 20, 42, 28, 18, 34, 48, 30, 20, 38, 26, 16, 30, 44, 24, 14, 26, 18, 10].map((height, index) => <View key={index} style={[styles.waveBar, { height, backgroundColor: index > 7 && index < 15 ? '#171717' : '#D4D4D4' }]} />)}
+              {[12, 23, 16, 32, 20, 42, 28, 18, 34, 48, 30, 20, 38, 26, 16, 30, 44, 24, 14, 26, 18, 10].map((height, index) => (
+                <View key={index} style={[styles.waveBar, { height, backgroundColor: index > 7 && index < 15 ? accentBlue : accentBlueMuted }]} />
+              ))}
             </View>
             <ContentPressable tone="dark" accessibilityLabel="说两句，开始自由畅聊" onPress={() => openRecorder('自由畅聊 / 即兴倾诉')} style={styles.recordAction} surfaceStyle={styles.recordButton}>
               <Ionicons name="mic-outline" size={21} color="#FFFFFF" /><Text dynamicTypeRamp="headline" style={styles.recordLabel}>说两句</Text>
@@ -313,7 +316,7 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: 20, paddingTop: 16, width: '100%', maxWidth: 640, alignSelf: 'center' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  recordingsButton: { width: 44, height: 44, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  recordingsButton: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   brandName: { ...Typography.largeTitle, color: '#0A0A0A' },
   caption: { ...Typography.subhead, marginTop: 6, color: '#616161' },
   hero: { padding: 22, borderRadius: 28, marginBottom: 30 },

@@ -11,8 +11,9 @@ export type ThemedTextProps = TextProps & {
 
 export function ThemedText({ style, type = 'default', themeColor, ...rest }: ThemedTextProps) {
   const theme = useTheme();
+  const color = type === 'linkPrimary' ? theme.accentBlue : theme[themeColor ?? 'text'];
 
-  return <Text dynamicTypeRamp={ramps[type]} style={[{ color: theme[themeColor ?? 'text'] }, styles[type], style]} {...rest} />;
+  return <Text dynamicTypeRamp={ramps[type]} style={[{ color }, styles[type], style]} {...rest} />;
 }
 
 const ramps = {
@@ -41,7 +42,6 @@ const styles = StyleSheet.create({
   },
   linkPrimary: {
     ...Typography.body,
-    color: '#005CB8',
   },
   code: {
     fontFamily: Fonts.mono,

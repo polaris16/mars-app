@@ -1,16 +1,18 @@
 import { NativeTabs } from 'expo-router/native-tabs';
 import { SCREEN_BACKGROUND } from '@/constants/colors';
+import { useTheme } from '@/hooks/use-theme';
 
 const contentStyle = { backgroundColor: SCREEN_BACKGROUND };
 
 export default function IOSTabs() {
+  const { accentBlue } = useTheme();
   return (
     <NativeTabs
-      tintColor="#005CB8"
-      iconColor={{ default: '#616161', selected: '#005CB8' }}
+      tintColor={accentBlue}
+      iconColor={{ default: '#616161', selected: accentBlue }}
       labelStyle={{
         default: { color: '#616161' },
-        selected: { color: '#005CB8' },
+        selected: { color: accentBlue },
       }}
       minimizeBehavior="never"
       disableTransparentOnScrollEdge

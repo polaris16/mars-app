@@ -8,8 +8,17 @@ import '@/global.css';
 import { Platform } from 'react-native';
 import { SCREEN_BACKGROUND } from './colors';
 
+function bluePalette(accentBlue: string) {
+  return {
+    accentBlue,
+    accentBlueMuted: `${accentBlue}52`,
+    accentBlueSubtle: `${accentBlue}18`,
+  };
+}
+
 export const Colors = {
   light: {
+    ...bluePalette('#0088FF'),
     text: '#000000',
     background: SCREEN_BACKGROUND,
     backgroundElement: '#F0F0F3',
@@ -17,6 +26,7 @@ export const Colors = {
     textSecondary: '#616161',
   },
   dark: {
+    ...bluePalette('#0091FF'),
     text: '#ffffff',
     background: '#000000',
     backgroundElement: '#212225',
