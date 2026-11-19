@@ -1,5 +1,6 @@
 
 import { Stack } from 'expo-router';
+import { SCREEN_BACKGROUND } from '@/constants/colors';
 
 export default function DebugLayout() {
   return (
@@ -7,7 +8,7 @@ export default function DebugLayout() {
       screenOptions={{
         headerShown: false,
         contentStyle: {
-          backgroundColor: '#F5F5F5',
+          backgroundColor: SCREEN_BACKGROUND,
         },
       }}
     />

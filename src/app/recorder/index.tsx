@@ -1,5 +1,7 @@
 import { Typography } from '@/constants/typography';
-import { GlassBackdrop, GlassSurface, GlassPressable } from '@/components/glass-surface';
+import { SCREEN_BACKGROUND } from '@/constants/colors';
+import { GlassPressable } from '@/components/glass-surface';
+import { useGlassAccessibility } from '@/components/ui/liquid-glass';
 
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -13,7 +15,7 @@ import {
     Text,
     View
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
     AudioModule,
@@ -26,10 +28,7 @@ import {
 
 import * as Sharing from 'expo-sharing';
 
-import {
-    Button,
-    ButtonText,
-} from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 
 interface RecordingItem {
   id: string;
@@ -77,7 +76,7 @@ const getCurrentTime = () => {
 
 function Waveform({
   data,
-  color = '#A3A3A3',
+  color = '#6B6B6B',
   barWidth = 2,
 }: {
   data: number[];
@@ -119,11 +118,11 @@ function RecordingCard({
   playing: boolean;
 }) {
   return (
-    <GlassSurface className="w-full p-5" style={{ borderRadius: 24 }}>
+    <View className="w-full p-5" style={{ borderRadius: 24, backgroundColor: '#FFFFFF' }}>
       {/* 标题区域 */}
       <View className="flex-row items-start gap-2">
         <View className="min-w-0 flex-1 gap-1">
-          <View className="flex-row items-center gap-2">
+          <View className="flex-row flex-wrap items-center gap-2">
             <Text dynamicTypeRamp="headline"
               className="flex-1"
               style={{ ...Typography.headline, color: '#111111' }}
@@ -162,6 +161,7 @@ function RecordingCard({
 
         <Pressable
           onPress={onMore}
+          accessibilityRole="button"
           accessibilityLabel="更多录音操作"
           className="h-11 w-11 shrink-0 items-center justify-center rounded-full active:bg-muted"
           hitSlop={8}
@@ -169,7 +169,7 @@ function RecordingCard({
           <Ionicons
             name="ellipsis-vertical"
             size={18}
-            color="#A3A3A3"
+            color="#6B6B6B"
           />
         </Pressable>
       </View>
@@ -178,6 +178,7 @@ function RecordingCard({
       <View className="mt-3 flex-row items-center gap-3 border-t pt-3" style={{ borderTopColor: '#E5E7EB' }}>
         <Pressable
           onPress={onPlay}
+          accessibilityRole="button"
           accessibilityLabel={playing ? '暂停播放' : '播放录音'}
           className="h-11 w-11 items-center justify-center rounded-full active:opacity-60"
           style={{ backgroundColor: '#F3F4F6' }}
@@ -195,17 +196,18 @@ function RecordingCard({
 
         <Pressable
           onPress={onShare}
+          accessibilityRole="button"
           accessibilityLabel="分享录音"
           className="h-11 w-11 items-center justify-center active:opacity-60"
         >
           <Ionicons
             name="share-outline"
             size={17}
-            color="#A3A3A3"
+            color="#6B6B6B"
           />
         </Pressable>
       </View>
-    </GlassSurface>
+    </View>
   );
 }
 
@@ -228,11 +230,13 @@ function RecordingSheet({
   onClose: () => void;
   onStop: () => void;
 }) {
+  const insets = useSafeAreaInsets();
+  const { reduceMotion } = useGlassAccessibility();
   return (
     <Modal
       visible={visible}
       transparent
-      animationType="slide"
+      animationType={reduceMotion ? 'none' : 'slide'}
       statusBarTranslucent
       onRequestClose={onClose}
     >
@@ -244,9 +248,10 @@ function RecordingSheet({
         />
 
         {/* 弹层主体 */}
-        <GlassSurface
-          className="w-full px-6 pb-8 pt-3"
-          style={{ borderRadius: 0, borderTopLeftRadius: 32, borderTopRightRadius: 32 }}
+        <ScrollView
+          accessibilityViewIsModal
+          style={{ flexGrow: 0, maxHeight: '90%', backgroundColor: '#FFFFFF', borderTopLeftRadius: 32, borderTopRightRadius: 32 }}
+          contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 12, paddingBottom: Math.max(insets.bottom, 16) + 16 }}
         >
           {/* 拖动指示条 */}
           <View className="h-3 w-full items-center justify-center">
@@ -259,7 +264,7 @@ function RecordingSheet({
           </Text>
 
           {/* 动态波形 */}
-          <View className="h-14 w-full flex-row items-center justify-center gap-[4px] overflow-hidden px-3">
+          <View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" className="h-14 w-full flex-row items-center justify-center gap-[4px] overflow-hidden px-3">
             {waveHeights.map((height, index) => (
               <View
                 key={index}
@@ -279,7 +284,7 @@ function RecordingSheet({
               <Ionicons
                 name="stats-chart-outline"
                 size={15}
-                color="#737373"
+                color="#616161"
               />
               <Text dynamicTypeRamp="footnote" style={{ ...Typography.footnote, color: '#4B5563' }}>
                 48.0 kHz
@@ -292,7 +297,7 @@ function RecordingSheet({
               <Ionicons
                 name="mic-outline"
                 size={15}
-                color="#737373"
+                color="#616161"
               />
               <Text dynamicTypeRamp="footnote" style={{ ...Typography.footnote, color: '#4B5563' }}>
                 智能降噪开启
@@ -304,6 +309,8 @@ function RecordingSheet({
           <View className="mt-7 w-full">
             <Pressable
               onPress={onStop}
+              accessibilityRole="button"
+              accessibilityLabel="停止录音并保存"
               className="min-h-[52px] w-full flex-row items-center justify-center gap-2 rounded-full bg-neutral-900 px-4 py-3 active:bg-neutral-700"
             >
               <View className="h-3.5 w-3.5 rounded-sm bg-white" />
@@ -312,7 +319,7 @@ function RecordingSheet({
               </Text>
             </Pressable>
           </View>
-        </GlassSurface>
+        </ScrollView>
       </View>
     </Modal>
   );
@@ -601,16 +608,14 @@ export default function RecordingPage() {
 
   return (
     <SafeAreaView
-      style={{ flex: 1, backgroundColor: '#FFFFFF' }}
+      style={{ flex: 1, backgroundColor: SCREEN_BACKGROUND }}
       edges={['top', 'bottom']}
     >
       <StatusBar
         barStyle="dark-content"
       />
 
-      <View style={{ flex: 1, backgroundColor: '#F9F9FF' }}>
-        <GlassBackdrop />
-
+      <View style={{ flex: 1, backgroundColor: SCREEN_BACKGROUND }}>
         {/* ================================= */}
         {/* 顶部导航 */}
         {/* ================================= */}
@@ -639,18 +644,16 @@ export default function RecordingPage() {
           </View>
 
           <Button
-            size="sm"
-            className="min-h-11 rounded-full bg-neutral-900 px-4 py-2 active:bg-neutral-700"
+            size="icon"
+            className="h-11 w-11 rounded-full bg-neutral-900 p-0 active:bg-neutral-700"
             isDisabled={!canProceed}
+            accessibilityLabel="添加照片或视频"
             accessibilityState={{ disabled: !canProceed }}
             onPress={handleNext}
           >
-            <ButtonText dynamicTypeRamp="headline" style={Typography.headline} className="text-white">
-              更多
-            </ButtonText>
             <Ionicons
-              name="arrow-forward"
-              size={15}
+              name="add"
+              size={24}
               color="#FFFFFF"
             />
           </Button>
@@ -674,7 +677,7 @@ export default function RecordingPage() {
           >
             {/* 列表标题 */}
             <View className="mb-4 min-h-8 flex-row items-center justify-between px-1">
-              <Text dynamicTypeRamp="caption1" style={{ ...Typography.caption1, color: '#747878' }}>共 {recordings.length} 条</Text>
+              <Text dynamicTypeRamp="caption1" style={{ ...Typography.caption1, color: '#616161' }}>共 {recordings.length} 条</Text>
             </View>
 
             {/* 录音卡片列表 */}
@@ -692,15 +695,15 @@ export default function RecordingPage() {
 
               {/* 空状态 */}
               {recordings.length === 0 && (
-                <GlassSurface
+                <View
                   className="items-center justify-center px-5 py-12"
-                  style={{ borderRadius: 28 }}
+                  style={{ borderRadius: 28, backgroundColor: '#FFFFFF' }}
                 >
                   <View className="mb-4 h-16 w-16 items-center justify-center rounded-full bg-muted">
                     <Ionicons
                       name="mic-outline"
                       size={28}
-                      color="#A3A3A3"
+                      color="#6B6B6B"
                     />
                   </View>
 
@@ -711,7 +714,7 @@ export default function RecordingPage() {
                   <Text dynamicTypeRamp="subheadline" className="mt-2 text-center" style={{ ...Typography.subhead, color: '#4B5563' }}>
                     随心记录灵感与心声
                   </Text>
-                </GlassSurface>
+                </View>
               )}
             </View>
           </ScrollView>
@@ -731,6 +734,7 @@ export default function RecordingPage() {
             <View pointerEvents="box-none" className="h-24 w-full items-center justify-center">
               <GlassPressable
                 onPress={handleMasterButton}
+                accessibilityLabel={isRecording ? '停止录音并保存' : sheetVisible ? '继续录音' : '开始录音'}
                 tone="dark"
                 surfaceClassName="h-20 w-20 items-center justify-center"
                 surfaceStyle={{ borderRadius: 40 }}
@@ -749,7 +753,7 @@ export default function RecordingPage() {
                 <Ionicons
                   name="information-circle-outline"
                   size={15}
-                  color="#737373"
+                  color="#616161"
                 />
               </View>
             )}*/}

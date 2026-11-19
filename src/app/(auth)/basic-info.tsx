@@ -1,7 +1,9 @@
 import { Typography } from '@/constants/typography';
-import { GlassScreen, GlassSurface } from '@/components/glass-surface';
+import { GlassScreen } from '@/components/glass-surface';
+import { ContentSurface } from '@/components/content-surface';
 import { BirthdayPicker } from '@/components/birthday-picker';
 import { DEFAULT_AVATAR_SOURCE } from '@/constants/avatar';
+import { useInputHeight } from '@/hooks/use-input-height';
 import { formatDate, MIN_BIRTHDAY_YEAR, parseBirthday } from '@/utils/profile-date';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
@@ -31,6 +33,7 @@ const MAX_NICKNAME_LENGTH = 20;
 const MAX_AVATAR_SIZE = 5 * 1024 * 1024;
 
 export default function BasicInfoScreen() {
+  const inputHeight = useInputHeight();
   const { user, completeBasicInfo } = useAuth();
 
   const [avatar, setAvatar] = useState(user?.avatar ?? '');
@@ -168,7 +171,7 @@ export default function BasicInfoScreen() {
   }
 
   return (
-    <GlassScreen style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+    <GlassScreen>
       <SafeAreaView style={{ flex: 1 }}>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
@@ -206,7 +209,7 @@ export default function BasicInfoScreen() {
                   accessibilityLabel="选择个人头像"
                   onPress={handleChooseAvatar}
                   className="relative"
-                  style={({ pressed }) => ({ borderRadius: 48, backgroundColor: '#DBEAFE', transform: [{ scale: pressed ? 0.98 : 1 }] })}
+                  style={({ pressed }) => ({ borderRadius: 48, backgroundColor: '#DBEAFE', opacity: pressed ? 0.7 : 1 })}
                 >
                   <View className="h-24 w-24 items-center justify-center overflow-hidden rounded-full border border-border" style={{ backgroundColor: '#DBEAFE' }}>
                     <Image
@@ -235,7 +238,7 @@ export default function BasicInfoScreen() {
               </View>
 
               {/* 表单 */}
-              <GlassSurface className="gap-5 p-5">
+              <ContentSurface className="gap-5 p-5">
                 {/* 昵称 */}
                 <View className="gap-2">
                   <View className="flex-row items-center justify-between">
@@ -249,7 +252,8 @@ export default function BasicInfoScreen() {
                     </Text>
                   </View>
 
-                  <TextInput style={Typography.body}
+                  <TextInput style={[Typography.body, { minHeight: inputHeight }]}
+                    accessibilityLabel="姓名或昵称，必填"
                     value={nickname}
                     onChangeText={value => {
                       setNickname(
@@ -262,10 +266,10 @@ export default function BasicInfoScreen() {
                       }));
                     }}
                     placeholder="请输入你的名字或好记的昵称"
-                    placeholderTextColor="#A3A3A3"
+                    placeholderTextColor="#6B6B6B"
                     maxLength={MAX_NICKNAME_LENGTH}
                     returnKeyType="done"
-                    className={`min-h-12 rounded-xl border bg-white px-3.5 py-3 text-foreground ${ errors.nickname ? 'border-destructive' : 'border-border' }`}
+                    className={`min-h-12 rounded-xl border bg-white px-3.5 py-3 text-foreground ${ errors.nickname ? 'border-destructive' : 'border-[#8E8E93]' }`}
                   />
 
                   {errors.nickname && (
@@ -331,7 +335,8 @@ export default function BasicInfoScreen() {
                     accessibilityRole="button"
                     accessibilityLabel={birthday ? `出生日期：${formatDate(birthday)}` : '选择出生日期'}
                     onPress={() => { Keyboard.dismiss(); setShowDatePicker(true); }}
-                    className={`min-h-12 py-3 flex-row items-center justify-between rounded-xl border bg-white px-3.5 ${ errors.birthday ? 'border-destructive' : 'border-border' }`}
+                    style={{ minHeight: inputHeight }}
+                    className={`min-h-12 py-3 flex-row items-center justify-between rounded-xl border bg-white px-3.5 ${ errors.birthday ? 'border-destructive' : 'border-[#8E8E93]' }`}
                   >
                     <Text dynamicTypeRamp="body" style={Typography.body}
                       className={`${ birthday ? 'text-foreground' : 'text-muted-foreground' }`}
@@ -355,11 +360,11 @@ export default function BasicInfoScreen() {
                   )}
 
                 </View>
-              </GlassSurface>
+              </ContentSurface>
             </ScrollView>
 
             {/* 底部按钮 */}
-            <GlassSurface className="p-3" style={{ marginHorizontal: 16, marginBottom: 12, borderRadius: 38 }}>
+            <ContentSurface className="p-3" style={{ marginHorizontal: 16, marginBottom: 12, borderRadius: 38 }}>
               <Button
                 className="min-h-[52px] w-full rounded-full py-3 bg-[#171717]"
                 onPress={handleNextStep}
@@ -369,7 +374,7 @@ export default function BasicInfoScreen() {
                   {submitting ? '保存中...' : '下一步 →'}
                 </ButtonText>
               </Button>
-            </GlassSurface>
+            </ContentSurface>
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>

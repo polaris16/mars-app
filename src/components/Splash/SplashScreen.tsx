@@ -1,22 +1,16 @@
 import { Typography } from '@/constants/typography';
-import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { AccessibilityInfo, ActivityIndicator, Animated, Easing, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { GlassScreen, GlassSurface } from '@/components/glass-surface';
-import { BrandLogo } from '@/components/brand-logo';
+import { GlassScreen } from '@/components/glass-surface';
+import { ContentSurface } from '@/components/content-surface';
 
 interface SplashScreenProps {
   onFinish: () => void;
 }
-
-const LIFE_HIGHLIGHTS = [
-  { icon: 'sunny-outline', label: '发现美好' },
-  { icon: 'leaf-outline', label: '享受日常' },
-  { icon: 'people-outline', label: '相伴同乐' },
-] as const;
 
 export default function SplashScreen({ onFinish }: SplashScreenProps) {
   const [entrance] = useState(() => new Animated.Value(0));
@@ -67,28 +61,29 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
             opacity: entrance,
             transform: [{ translateY: entrance.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }) }],
           }]}>
-            <View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={styles.artwork}>
-              <BrandLogo />
+            <View style={styles.brandGroup}>
+              <View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={styles.artwork}>
+                <Image
+                  source={require('@/assets/images/splash-logo.png')}
+                  style={styles.logo}
+                  contentFit="contain"
+                  accessible={false}
+                />
+              </View>
+              <Text dynamicTypeRamp="largeTitle" accessibilityRole="header" style={styles.brandName}>美刻</Text>
             </View>
 
-            <Text dynamicTypeRamp="largeTitle" accessibilityRole="header" style={styles.title}>此刻，即美好</Text>
-            <Text dynamicTypeRamp="subheadline" style={styles.description}>探索生活的新意与温度</Text>
-
-            <View style={styles.features}>
-              {LIFE_HIGHLIGHTS.map(feature => (
-                <View key={feature.label} style={styles.feature}>
-                  <Ionicons accessible={false} name={feature.icon} size={19} color="#525252" />
-                  <Text dynamicTypeRamp="caption1" style={styles.featureLabel}>{feature.label}</Text>
-                </View>
-              ))}
+            <View style={styles.copyGroup}>
+              <Text dynamicTypeRamp="title3" style={styles.subtitle}>此刻，即美好</Text>
+              <Text dynamicTypeRamp="subheadline" style={styles.description}>M · 陪伴 · 温暖 · 美好时刻</Text>
             </View>
           </Animated.View>
 
           <View style={styles.footer}>
-            <GlassSurface style={styles.loading} accessibilityRole="progressbar" accessibilityLabel="正在开启美刻" accessibilityState={{ busy: true }}>
+            <ContentSurface style={styles.loading} accessibilityRole="progressbar" accessibilityLabel="正在开启美刻" accessibilityState={{ busy: true }}>
               <ActivityIndicator size="small" color="#525252" accessible={false} />
               <Text dynamicTypeRamp="footnote" style={styles.loadingLabel}>正在开启美刻</Text>
-            </GlassSurface>
+            </ContentSurface>
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -100,12 +95,13 @@ const styles = StyleSheet.create({
   fill: { flex: 1 },
   content: { flexGrow: 1, width: '100%', maxWidth: 480, alignSelf: 'center', paddingHorizontal: 28, paddingTop: 16, paddingBottom: 20 },
   main: { flexGrow: 1, flexShrink: 0, alignItems: 'center', justifyContent: 'center', paddingVertical: 32 },
-  artwork: { width: 248, height: 200, alignItems: 'center', justifyContent: 'center' },
-  title: { ...Typography.largeTitle, marginTop: 24, textAlign: 'center', color: '#171717' },
-  description: { ...Typography.subhead, marginTop: 14, textAlign: 'center', color: '#737373' },
-  features: { width: '100%', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 24, marginTop: 32 },
-  feature: { alignItems: 'center', gap: 8 },
-  featureLabel: { ...Typography.caption1, color: '#525252' },
+  brandGroup: { width: '100%', alignItems: 'center' },
+  artwork: { width: 200, height: 160, alignItems: 'center', justifyContent: 'center' },
+  logo: { width: '100%', height: '100%' },
+  brandName: { ...Typography.largeTitle, width: '100%', textAlign: 'center', color: '#171717' },
+  copyGroup: { width: '100%', alignItems: 'center', gap: 12, marginTop: 32 },
+  subtitle: { ...Typography.title3, fontWeight: '400', width: '100%', textAlign: 'center', color: '#404040' },
+  description: { ...Typography.subhead, width: '100%', textAlign: 'center', color: '#616161' },
   footer: { alignItems: 'center' },
   loading: { flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 28, minHeight: 48, paddingHorizontal: 22, paddingVertical: 12 },
   loadingLabel: { ...Typography.footnote, color: '#525252' },

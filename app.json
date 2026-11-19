@@ -6,7 +6,8 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "marsapp",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#F2F2F7",
     "extra": {
       "apiBaseUrl": "http://192.168.3.48:8000"
     },
@@ -31,7 +32,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#F9F9FF"
+          "backgroundColor": "#F2F2F7"
         }
       ],
       "expo-secure-store",

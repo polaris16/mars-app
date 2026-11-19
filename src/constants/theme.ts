@@ -6,14 +6,15 @@
 import '@/global.css';
 
 import { Platform } from 'react-native';
+import { SCREEN_BACKGROUND } from './colors';
 
 export const Colors = {
   light: {
     text: '#000000',
-    background: '#ffffff',
+    background: SCREEN_BACKGROUND,
     backgroundElement: '#F0F0F3',
     backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
+    textSecondary: '#616161',
   },
   dark: {
     text: '#ffffff',

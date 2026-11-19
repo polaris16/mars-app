@@ -1,4 +1,5 @@
 import { Typography } from '@/constants/typography';
+import { SCREEN_BACKGROUND } from '@/constants/colors';
 
 import { useCallback, useEffect, useState } from 'react';
 
@@ -163,7 +164,7 @@ export default function StorageDebugPage() {
       className={`rounded-md px-2.5 py-1 ${ exists ? 'bg-emerald-100' : 'bg-neutral-100' }`}
     >
       <Text dynamicTypeRamp="caption1" style={Typography.caption1Emphasized}
-        className={`${ exists ? 'text-emerald-700' : 'text-neutral-400' }`}
+        className={`${ exists ? 'text-emerald-700' : 'text-neutral-600' }`}
       >
         {exists ? '已存储' : '不存在'}
       </Text>
@@ -179,7 +180,7 @@ export default function StorageDebugPage() {
     value: string;
   }) => (
     <View className="min-h-11 flex-row items-center justify-between border-b border-neutral-100">
-      <Text dynamicTypeRamp="subheadline" style={Typography.subhead} className="text-neutral-400">{label}</Text>
+      <Text dynamicTypeRamp="subheadline" style={Typography.subhead} className="text-neutral-600">{label}</Text>
       <Text dynamicTypeRamp="subheadline" style={Typography.subheadEmphasized} className="max-w-[65%] text-right text-neutral-700">
         {value}
       </Text>
@@ -201,7 +202,8 @@ export default function StorageDebugPage() {
     disabled?: boolean;
   }) => (
     <TouchableOpacity
-      className="flex-row items-center gap-1.5 rounded-lg px-3 py-2 active:bg-neutral-100"
+      accessibilityRole="button"
+      className="min-h-11 flex-row items-center gap-1.5 rounded-lg px-3 py-2 active:bg-neutral-100"
       onPress={onPress}
       disabled={disabled}
       activeOpacity={0.7}
@@ -209,10 +211,10 @@ export default function StorageDebugPage() {
       <Ionicons
         name={icon}
         size={16}
-        color={danger ? '#EF4444' : '#2563EB'}
+        color={danger ? '#B42318' : '#2563EB'}
       />
       <Text dynamicTypeRamp="subheadline" style={Typography.subheadEmphasized}
-        className={`${ danger ? 'text-red-500' : 'text-blue-600' } ${disabled ? 'opacity-40' : ''}`}
+        className={`${ danger ? 'text-red-700' : 'text-blue-600' } ${disabled ? 'opacity-40' : ''}`}
       >
         {title}
       </Text>
@@ -220,12 +222,12 @@ export default function StorageDebugPage() {
   );
 
   return (
-    <View className="flex-1 bg-neutral-50">
+    <View style={{ flex: 1, backgroundColor: SCREEN_BACKGROUND }}>
       <Stack.Screen
         options={{
           title: '本地存储调试',
           headerShown: true,
-          headerStyle: { backgroundColor: '#FFFFFF' },
+          headerStyle: { backgroundColor: SCREEN_BACKGROUND },
           headerTintColor: '#111827',
           headerTitleStyle: { fontWeight: '700' },
         }}
@@ -237,7 +239,7 @@ export default function StorageDebugPage() {
           <Text dynamicTypeRamp="title1" style={Typography.title1} className="text-neutral-900">
             Storage Debug
           </Text>
-          <Text dynamicTypeRamp="caption1" style={Typography.caption1} className="mt-1 text-neutral-400">
+          <Text dynamicTypeRamp="caption1" style={Typography.caption1} className="mt-1 text-neutral-600">
             SecureStore 本地存储调试
           </Text>
         </View>
@@ -267,7 +269,7 @@ export default function StorageDebugPage() {
             <Text dynamicTypeRamp="title1" style={Typography.title1} className="text-neutral-900">
               {[data.token, data.session].filter(Boolean).length}
             </Text>
-            <Text dynamicTypeRamp="caption1" style={Typography.caption1} className="mt-1 text-neutral-400">
+            <Text dynamicTypeRamp="caption1" style={Typography.caption1} className="mt-1 text-neutral-600">
               已存储项目
             </Text>
           </View>
@@ -278,7 +280,7 @@ export default function StorageDebugPage() {
             <Text dynamicTypeRamp="title1" style={Typography.title1} className="text-neutral-900">
               2
             </Text>
-            <Text dynamicTypeRamp="caption1" style={Typography.caption1} className="mt-1 text-neutral-400">
+            <Text dynamicTypeRamp="caption1" style={Typography.caption1} className="mt-1 text-neutral-600">
               认证存储 Key
             </Text>
           </View>
@@ -330,7 +332,7 @@ export default function StorageDebugPage() {
           </View>
 
           <View className="rounded-xl bg-white p-4">
-            <Text dynamicTypeRamp="caption1" style={Typography.caption1} className="mb-3 font-mono text-neutral-400">
+            <Text dynamicTypeRamp="caption1" style={Typography.caption1} className="mb-3 font-mono text-neutral-600">
               {TOKEN_KEY}
             </Text>
 
@@ -382,7 +384,7 @@ export default function StorageDebugPage() {
           </View>
 
           <View className="rounded-xl bg-white p-4">
-            <Text dynamicTypeRamp="caption1" style={Typography.caption1} className="mb-3 font-mono text-neutral-400">
+            <Text dynamicTypeRamp="caption1" style={Typography.caption1} className="mb-3 font-mono text-neutral-600">
               {SESSION_KEY}
             </Text>
 
@@ -446,7 +448,7 @@ export default function StorageDebugPage() {
             size={16}
             color="#9CA3AF"
           />
-          <Text dynamicTypeRamp="footnote" style={Typography.footnote} className="flex-1 text-neutral-400">
+          <Text dynamicTypeRamp="footnote" style={Typography.footnote} className="flex-1 text-neutral-600">
             清空认证数据将同时退出登录，并清除内存中的用户及角色状态。
             此功能仅建议在开发调试环境使用。
           </Text>

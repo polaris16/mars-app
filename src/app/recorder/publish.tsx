@@ -1,5 +1,6 @@
 import { Typography } from '@/constants/typography';
-import { GlassBackdrop, GlassSurface } from '@/components/glass-surface';
+import { ContentSurface } from '@/components/content-surface';
+import { SCREEN_BACKGROUND } from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
@@ -12,6 +13,7 @@ import {
   StatusBar,
   Text,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -19,6 +21,11 @@ type MediaItem = ImagePicker.ImagePickerAsset & { localId: string };
 
 export default function AudioPublishPage() {
   const router = useRouter();
+  const { width, fontScale } = useWindowDimensions();
+  const [gridWidth, setGridWidth] = useState(() => Math.min(Math.max(width - 40, 0), 640));
+  const columns = fontScale >= 2 || gridWidth < 300 ? 1 : fontScale >= 1.5 ? 2 : 3;
+  const tileWidth = (gridWidth - (columns - 1) * 10) / columns;
+  const addIconSize = 44 * Math.max(1, fontScale);
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [selectedMediaId, setSelectedMediaId] = useState<string | null>(null);
   const photos = useMemo(() => media.filter(item => item.type !== 'video').length, [media]);
@@ -50,8 +57,7 @@ export default function AudioPublishPage() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F9F9FF' }} edges={['top', 'bottom']}>
-      <GlassBackdrop />
+    <SafeAreaView style={{ flex: 1, backgroundColor: SCREEN_BACKGROUND }} edges={['top', 'bottom']}>
       <StatusBar barStyle="dark-content" />
 
       <View style={{ minHeight: 64, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8 }}>
@@ -63,24 +69,25 @@ export default function AudioPublishPage() {
           dynamicTypeRamp="headline"
           style={{ ...Typography.headline, marginLeft: 4, flexShrink: 1, color: '#1B1C1C' }}
         >
-          更多
+          素材
         </Text>
       </View>
 
-      <View style={{ flex: 1, paddingHorizontal: 20, paddingBottom: 12 }}>
+      <View style={{ flex: 1, width: '100%', maxWidth: 680, alignSelf: 'center', paddingHorizontal: 20, paddingBottom: 12 }}>
         <ScrollView
+          onLayout={event => setGridWidth(event.nativeEvent.layout.width)}
           style={{ flex: 1, width: '100%' }}
           contentContainerStyle={{ flexGrow: 1, paddingTop: 8, paddingBottom: 20 }}
           showsVerticalScrollIndicator={false}
         >
           {media.length > 0 && (
             <View style={{ marginBottom: 16, alignItems: 'flex-end' }}>
-              <Text dynamicTypeRamp="caption1" style={{ ...Typography.caption1, color: '#737373' }}>{photos} 照片 · {videos} 视频</Text>
+              <Text dynamicTypeRamp="caption1" style={{ ...Typography.caption1, color: '#616161' }}>{photos} 照片 · {videos} 视频</Text>
             </View>
           )}
 
           {media.length === 0 ? (
-            <GlassSurface style={{ alignItems: 'center', borderRadius: 28, paddingHorizontal: 20, paddingVertical: 36 }}>
+            <ContentSurface style={{ alignItems: 'center', borderRadius: 28, paddingHorizontal: 20, paddingVertical: 36 }}>
               <Pressable
                 onPress={addMedia}
                 accessibilityRole="button"
@@ -93,15 +100,15 @@ export default function AudioPublishPage() {
                 </View>
                 <Text dynamicTypeRamp="headline" style={{ ...Typography.headline, marginTop: 4, color: '#0A0A0A' }}>点击添加照片或视频</Text>
               </Pressable>
-              <View style={{ marginTop: 20, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Ionicons name="shield-checkmark-outline" size={15} color="#A3A3A3" />
-                <Text dynamicTypeRamp="footnote" style={{ ...Typography.footnote, color: '#737373' }}>最多可添加 9 项 · 支持 JPG / PNG / MP4</Text>
+              <View style={{ marginTop: 20, flexDirection: 'row', alignItems: 'center', gap: 6, maxWidth: '100%' }}>
+                <Ionicons name="shield-checkmark-outline" size={15} color="#6B6B6B" />
+                <Text dynamicTypeRamp="footnote" style={{ ...Typography.footnote, color: '#616161', flexShrink: 1 }}>最多可添加 9 项 · 支持 JPG / PNG / MP4</Text>
               </View>
-            </GlassSurface>
+            </ContentSurface>
           ) : (
             <View className="flex-row flex-wrap gap-2.5">
               {media.map(item => (
-                <View key={item.localId} className="relative w-[31.5%] overflow-hidden rounded-xl bg-[#E6E8F1]" style={{ aspectRatio: 1 }}>
+                <View key={item.localId} className="relative overflow-hidden rounded-xl bg-[#F5F5F5]" style={{ width: tileWidth, aspectRatio: 1 }}>
                   <Pressable
                     onPress={() => setSelectedMediaId(current => current === item.localId ? null : item.localId)}
                     accessibilityRole="button"
@@ -112,7 +119,7 @@ export default function AudioPublishPage() {
                   >
                     <Image source={{ uri: item.uri }} className="h-full w-full" resizeMode="cover" />
                     {item.type === 'video' && <View pointerEvents="none" className="absolute inset-0 items-center justify-center"><View className="h-9 w-9 items-center justify-center rounded-full bg-black/60"><Ionicons name="play" size={18} color="white" /></View></View>}
-                    <View pointerEvents="none" className="absolute bottom-0 left-0 right-0 bg-black/50 px-1.5 py-1"><Text dynamicTypeRamp="caption1" style={Typography.caption1} numberOfLines={1} className="text-white">{item.fileName ?? (item.type === 'video' ? '视频' : '照片')}</Text></View>
+                    <View pointerEvents="none" className="absolute bottom-0 left-0 right-0 bg-black/80 px-1.5 py-1"><Text dynamicTypeRamp="caption1" style={Typography.caption1} numberOfLines={1} className="text-white">{item.fileName ?? (item.type === 'video' ? '视频' : '照片')}</Text></View>
                   </Pressable>
                   {selectedMediaId === item.localId && (
                     <Pressable
@@ -131,7 +138,7 @@ export default function AudioPublishPage() {
                   )}
                 </View>
               ))}
-              {media.length < 9 && <Pressable onPress={addMedia} className="w-[31.5%] items-center justify-center rounded-xl bg-[#F1F3FC]" style={{ aspectRatio: 1 }}><View className="h-9 w-9 items-center justify-center rounded-full bg-[#E0E2EB]"><Ionicons name="add" size={21} color="#414753" /></View><Text dynamicTypeRamp="caption1" style={Typography.caption1Emphasized} className="mt-1.5 text-[#737373]">添加</Text></Pressable>}
+              {media.length < 9 && <Pressable onPress={addMedia} accessibilityRole="button" accessibilityLabel="添加照片或视频" className="items-center justify-center rounded-xl bg-white active:opacity-60" style={{ width: tileWidth, aspectRatio: 1 }}><View style={{ width: addIconSize, height: addIconSize, borderRadius: addIconSize / 2, backgroundColor: '#F5F5F5', alignItems: 'center', justifyContent: 'center' }}><Ionicons name="add" size={21 * Math.max(1, fontScale)} color="#414753" /></View><Text dynamicTypeRamp="caption1" style={Typography.caption1Emphasized} className="mt-1.5 text-[#616161]">添加</Text></Pressable>}
             </View>
           )}
         </ScrollView>

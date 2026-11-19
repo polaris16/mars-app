@@ -1,4 +1,5 @@
 import { GlassView } from '@/components/ui/liquid-glass';
+import { SCREEN_BACKGROUND } from '@/constants/colors';
 import { Pressable, StyleSheet, View, type PressableProps, type ViewProps } from 'react-native';
 import type { ComponentProps } from 'react';
 
@@ -27,7 +28,7 @@ type GlassPressableProps = PressableProps & {
 export function GlassPressable({ children, tone, surfaceStyle, surfaceClassName, style, ...props }: GlassPressableProps) {
   return <Pressable accessibilityRole="button" {...props} style={state => [
     typeof style === 'function' ? style(state) : style,
-    state.pressed && { transform: [{ scale: 0.98 }] },
+    state.pressed && { opacity: 0.7 },
   ]}>
     {state => <GlassSurface isInteractive tone={tone} className={surfaceClassName} style={surfaceStyle}>
       {typeof children === 'function' ? children(state) : children}
@@ -35,15 +36,8 @@ export function GlassPressable({ children, tone, surfaceStyle, surfaceClassName,
   </Pressable>;
 }
 
-export function GlassBackdrop() {
-  return <View pointerEvents="none" accessible={false} style={styles.backdrop}>
-    <View style={styles.light} />
-    <View style={styles.shade} />
-  </View>;
-}
-
 export function GlassScreen({ children, style, ...props }: ViewProps) {
-  return <View {...props} style={[styles.screen, style]}><GlassBackdrop />{children}</View>;
+  return <View {...props} style={[styles.screen, style]}>{children}</View>;
 }
 
 const styles = StyleSheet.create({
@@ -58,8 +52,5 @@ const styles = StyleSheet.create({
     shadowRadius: 18,
   },
   dark: { borderColor: '#404040', borderTopColor: '#606060' },
-  screen: { flex: 1, backgroundColor: '#F9F9FF' },
-  backdrop: { ...StyleSheet.absoluteFill, overflow: 'hidden' },
-  light: { position: 'absolute', top: -100, right: -100, width: 380, height: 380, borderRadius: 190, backgroundColor: '#FFFFFF' },
-  shade: { position: 'absolute', top: 300, left: -180, width: 360, height: 500, borderRadius: 180, backgroundColor: 'rgba(229,229,229,0.24)', transform: [{ rotate: '-30deg' }] },
+  screen: { flex: 1, backgroundColor: SCREEN_BACKGROUND },
 });

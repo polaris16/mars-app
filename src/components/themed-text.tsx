@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
   },
   linkPrimary: {
     ...Typography.body,
-    color: '#3c87f7',
+    color: '#005CB8',
   },
   code: {
     fontFamily: Fonts.mono,

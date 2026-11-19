@@ -19,8 +19,8 @@
     --popover: 255 255 255;
     --popover-foreground: 10 10 10;
     --muted: 245 245 245;
-    --muted-foreground: 115 115 115;
-    --destructive: 231 0 11;
+    --muted-foreground: 97 97 97;
+    --destructive: 180 35 24;
     --foreground: 10 10 10;
     --border: 229 229 229;
     --input: 229 229 229;
@@ -81,8 +81,8 @@
     --popover: 255 255 255;
     --popover-foreground: 10 10 10;
     --muted: 245 245 245;
-    --muted-foreground: 115 115 115;
-    --destructive: 231 0 11;
+    --muted-foreground: 97 97 97;
+    --destructive: 180 35 24;
     --foreground: 10 10 10;
     --border: 229 229 229;
     --input: 229 229 229;

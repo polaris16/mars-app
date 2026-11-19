@@ -1,5 +1,6 @@
 import { Typography } from '@/constants/typography';
-import { GlassScreen, GlassSurface, GlassPressable } from '@/components/glass-surface';
+import { GlassScreen } from '@/components/glass-surface';
+import { ContentSurface, ContentPressable } from '@/components/content-surface';
 import { useEffect, useState } from 'react';
 import {
   Pressable,
@@ -66,19 +67,17 @@ export default function RoleSelectScreen() {
   };
 
   return (
-    <GlassScreen
-      style={{ flex: 1, backgroundColor: '#FFFFFF' }}
-    >
+    <GlassScreen>
       <SafeAreaView style={{ flex: 1 }}>
         <View style={{ flex: 1 }}>
 
           {/* 顶部导航 */}
-          <View className="h-12 flex-row items-center justify-between px-5">
+          <View className="min-h-14 flex-row items-center justify-between px-5">
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="返回"
               onPress={handleBack}
-              className="-ml-2 h-10 w-10 items-center justify-center rounded-full"
+              className="-ml-2 h-11 w-11 items-center justify-center rounded-full active:opacity-60"
             >
               <Icon
                 as={ArrowLeftIcon}
@@ -87,7 +86,7 @@ export default function RoleSelectScreen() {
               />
             </Pressable>
 
-            <View className="h-10 w-10" />
+            <View className="h-11 w-11" />
           </View>
 
           {/* 页面内容 */}
@@ -120,14 +119,14 @@ export default function RoleSelectScreen() {
                 const isSelected = selectedRoleId === role.id;
 
                 return (
-                  <GlassPressable
+                  <ContentPressable
                     key={role.id}
                     accessibilityRole="radio"
                     accessibilityState={{
-                      selected: isSelected,
+                      checked: isSelected,
                     }}
                     onPress={() => handleSelectRole(role.id)}
-                    surfaceStyle={{ borderColor: isSelected ? '#171717' : '#FFFFFF', borderRadius: 24 }}
+                    surfaceStyle={{ borderWidth: 2, borderColor: isSelected ? '#171717' : 'transparent', borderRadius: 24 }}
                     surfaceClassName="p-5"
                   >
                     <View className="flex-row items-center justify-between">
@@ -143,14 +142,14 @@ export default function RoleSelectScreen() {
 
                       {/* 选择状态 */}
                       <View
-                        className={`h-5 w-5 items-center justify-center rounded-full border ${ isSelected ? 'border-[#171717] bg-[#171717]' : 'border-[#D4D4D4] bg-background' }`}
+                        className={`h-5 w-5 items-center justify-center rounded-full border ${ isSelected ? 'border-[#171717] bg-[#171717]' : 'border-[#8E8E93] bg-background' }`}
                       >
                         {isSelected && (
                           <View className="h-2 w-2 rounded-full bg-white" />
                         )}
                       </View>
                     </View>
-                  </GlassPressable>
+                  </ContentPressable>
                 );
               })}
 
@@ -177,7 +176,7 @@ export default function RoleSelectScreen() {
           </ScrollView>
 
           {/* 底部固定按钮 */}
-          <GlassSurface className="p-3" style={{ marginHorizontal: 16, marginBottom: 12, borderRadius: 38 }}>
+          <ContentSurface className="p-3" style={{ marginHorizontal: 16, marginBottom: 12, borderRadius: 38 }}>
             <Button
               className="min-h-[52px] w-full rounded-full py-3 bg-[#171717]"
               onPress={handleConfirm}
@@ -195,7 +194,7 @@ export default function RoleSelectScreen() {
                 />
               )}
             </Button>
-          </GlassSurface>
+          </ContentSurface>
 
         </View>
       </SafeAreaView>

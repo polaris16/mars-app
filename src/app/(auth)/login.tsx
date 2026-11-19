@@ -1,11 +1,13 @@
 import { Typography } from '@/constants/typography';
-import { GlassScreen, GlassSurface } from '@/components/glass-surface';
+import { GlassScreen } from '@/components/glass-surface';
+import { ContentSurface } from '@/components/content-surface';
 import { useAuth } from '@/store/AuthContext';
 import { loginWithPhoneCode, sendPhoneCode } from '@/services/authService';
 import { router } from 'expo-router';
+import { useInputHeight } from '@/hooks/use-input-height';
 
 import { useEffect, useRef, useState } from 'react';
-import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, Text, View, useWindowDimensions, type TextInputInstance } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View, useWindowDimensions, type TextInputInstance } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Rect } from 'react-native-svg';
 
@@ -21,8 +23,9 @@ const POLICIES = ['用户协议', '隐私政策', '登录政策'] as const;
 type Feedback = { message: string; field?: 'phone' | 'code' | 'agreement'; error?: boolean };
 
 export default function LoginScreen() {
-  const { fontScale } = useWindowDimensions();
-  const inputHeight = Math.max(48, Math.ceil(Typography.body.lineHeight * fontScale + 24));
+  const inputHeight = useInputHeight();
+  const { fontScale, width } = useWindowDimensions();
+  const stackedCodeButton = fontScale >= 1.5 || width < 360;
   const phoneInput = useRef<TextInputInstance>(null);
   const codeInput = useRef<TextInputInstance>(null);
   const [phone, setPhone] = useState('');
@@ -155,8 +158,14 @@ export default function LoginScreen() {
     setFeedback(undefined);
   }
 
+  const codeRequestButton = (
+    <Button className="min-h-11 shrink-0 rounded-lg px-3 py-2" isDisabled={sendingCode || secondsLeft > 0} onPress={requestCode} variant="secondary">
+      <ButtonText dynamicTypeRamp="footnote" style={Typography.footnoteEmphasized}>{sendingCode ? '发送中...' : secondsLeft > 0 ? `${secondsLeft}s 后重试` : '获取验证码'}</ButtonText>
+    </Button>
+  );
+
   return (
-    <GlassScreen style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+    <GlassScreen>
       <SafeAreaView style={{ flex: 1 }}>
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : Platform.OS === 'android' ? 'height' : undefined}>
           <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" showsVerticalScrollIndicator={false}>
@@ -174,13 +183,13 @@ export default function LoginScreen() {
                 <Text dynamicTypeRamp="subheadline" style={Typography.subhead} className="text-muted-foreground">尽享精彩生活</Text>
               </View>
 
-              <GlassSurface className="gap-4 p-5" style={{ borderRadius: 28 }}>
+              <ContentSurface className="gap-4 p-5" style={{ borderRadius: 28 }}>
                 <View className="gap-1">
                   <Text dynamicTypeRamp="subheadline" style={Typography.subhead} className="text-muted-foreground">手机号码</Text>
                   <Input style={{ height: inputHeight }} className="gap-0 rounded-2xl px-0 shadow-none" isInvalid={feedback?.field === 'phone'}>
                     <Button accessibilityLabel="国家或地区：中国大陆 +86" className="h-full gap-1 rounded-r-none pl-3 pr-2" variant="ghost" onPress={() => setDialog({ title: '国家或地区', message: '中国大陆（+86）\n\n目前仅支持中国大陆手机号码登录。' })}>
                       <ButtonText dynamicTypeRamp="body" style={Typography.body}>+86</ButtonText>
-                      <Svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="#737373" strokeWidth={2} accessible={false}><Path d="m7 10 5 5 5-5" strokeLinecap="round" strokeLinejoin="round" /></Svg>
+                      <Svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="#616161" strokeWidth={2} accessible={false}><Path d="m7 10 5 5 5-5" strokeLinecap="round" strokeLinejoin="round" /></Svg>
                     </Button>
                     <View className="h-5 w-px bg-border" />
                     <InputField style={Typography.body}
@@ -188,7 +197,7 @@ export default function LoginScreen() {
                       ref={(input) => { phoneInput.current = input as unknown as TextInputInstance | null; }}
                       accessibilityLabel="手机号码，中国大陆 +86"
                       autoComplete="tel-national"
-                      className="min-w-0 px-3 placeholder:text-[#a3a3a3]"
+                      className="min-w-0 px-3 placeholder:text-[#6B6B6B]"
                       keyboardType="phone-pad"
                       maxLength={11}
                       onChangeText={changePhone}
@@ -197,21 +206,21 @@ export default function LoginScreen() {
                     />
                     {phone.length > 0 && (
                       <Button accessibilityLabel="清除手机号码" className="h-full min-w-11 px-3" variant="ghost" onPress={() => { changePhone(''); phoneInput.current?.focus(); }}>
-                        <Icon as={CloseCircleIcon} size="md" className="text-[#a3a3a3]" />
+                        <Icon as={CloseCircleIcon} size="md" className="text-[#6B6B6B]" />
                       </Button>
                     )}
                   </Input>
                 </View>
 
                 <View className="gap-1">
-                  <View className="flex-row items-center justify-between">
+                  <View className="flex-row flex-wrap items-center justify-between gap-x-2">
                     <Text dynamicTypeRamp="subheadline" style={Typography.subhead} className="text-muted-foreground">短信验证码</Text>
-                    <Button variant="link" onPress={showHelp} hitSlop={8} className="min-h-5 px-0 py-0">
+                    <Button variant="link" onPress={showHelp} className="min-h-11 px-0 py-2">
                       <ButtonText dynamicTypeRamp="footnote" style={Typography.footnoteEmphasized} className="text-muted-foreground">收不到验证码？</ButtonText>
                     </Button>
                   </View>
                   <Input style={{ height: inputHeight }} className="gap-0 rounded-2xl pl-3 pr-1 shadow-none" isInvalid={feedback?.field === 'code'}>
-                    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#a3a3a3" strokeWidth={1.8} accessible={false}>
+                    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" strokeWidth={1.8} accessible={false}>
                       <Path d="M12 3 3.5 6.5V12c0 5 4.5 8 8.5 9 4-1 8.5-4 8.5-9V6.5L12 3Z" strokeLinejoin="round" />
                       <Rect x={8.5} y={10} width={7} height={6} rx={1.5} /><Path d="M10 10V8a2 2 0 0 1 4 0v2" />
                     </Svg>
@@ -219,7 +228,7 @@ export default function LoginScreen() {
                       ref={(input) => { codeInput.current = input as unknown as TextInputInstance | null; }}
                       accessibilityLabel="短信验证码"
                       autoComplete={Platform.OS === 'android' ? 'sms-otp' : 'one-time-code'}
-                      className="min-w-0 px-2 placeholder:text-[#a3a3a3]"
+                      className="min-w-0 px-2 placeholder:text-[#6B6B6B]"
                       keyboardType="number-pad"
                       maxLength={CODE_LENGTH}
                       onChangeText={(value) => {
@@ -230,10 +239,9 @@ export default function LoginScreen() {
                       placeholder="请输入6位验证码"
                       value={code}
                     />
-                    <Button className="min-h-8 shrink-0 rounded-md px-3 py-1.5" isDisabled={sendingCode || secondsLeft > 0} onPress={requestCode} variant="secondary" hitSlop={{ top: 6, bottom: 6 }}>
-                      <ButtonText dynamicTypeRamp="footnote" style={Typography.footnoteEmphasized}>{sendingCode ? '发送中...' : secondsLeft > 0 ? `${secondsLeft}s 后重试` : '获取验证码'}</ButtonText>
-                    </Button>
+                    {!stackedCodeButton && codeRequestButton}
                   </Input>
+                  {stackedCodeButton && codeRequestButton}
                 </View>
 
                 <Button
@@ -256,22 +264,23 @@ export default function LoginScreen() {
                 {feedback && feedback.field !== 'agreement' && (
                   <Text dynamicTypeRamp="footnote" style={Typography.footnote} accessibilityLiveRegion="polite" className={feedback.error ? 'text-destructive' : 'text-muted-foreground'}>{feedback.message}</Text>
                 )}
-              </GlassSurface>
+              </ContentSurface>
 
               <View className="mt-8 items-center gap-3 px-2 pb-3 pt-4">
                 <View className="flex-row items-start justify-center gap-2">
-                  <Checkbox accessibilityLabel="我已阅读并同意用户协议、隐私政策及登录政策" className="mt-0.5 min-h-5 min-w-5 items-center justify-center" hitSlop={10} isInvalid={feedback?.field === 'agreement'} isChecked={agreed} value="agreement" onChange={(checked) => { setAgreed(checked); if (feedback?.field === 'agreement') setFeedback(undefined); }}>
+                  <Checkbox accessibilityLabel="我已阅读并同意用户协议、隐私政策及登录政策" className="min-h-11 min-w-11 items-center justify-center" isInvalid={feedback?.field === 'agreement'} isChecked={agreed} value="agreement" onChange={(checked) => { setAgreed(checked); if (feedback?.field === 'agreement') setFeedback(undefined); }}>
                     <CheckboxIndicator className="shadow-none"><CheckboxIcon as={CheckIcon} /></CheckboxIndicator>
                   </Checkbox>
-                  <Text dynamicTypeRamp="footnote" style={Typography.footnote} className="shrink text-center text-muted-foreground">
-                    我已阅读并同意{' '}
-                    {POLICIES.map((policy, index) => (
-                      <Text key={policy}>
-                        {index > 0 ? (index === POLICIES.length - 1 ? ' 及 ' : '、') : ''}
-                        <Text accessibilityRole="button" className="font-medium text-foreground underline decoration-border" onPress={() => setDialog({ title: policy, message: `当前为登录页面演示，正式《${policy}》尚未配置。上线前需接入完整的政策正文。` })}>《{policy}》</Text>
-                      </Text>
-                    ))}
-                  </Text>
+                  <View className="min-w-0 flex-1">
+                    <Text dynamicTypeRamp="footnote" style={Typography.footnote} className="min-h-11 py-3 text-muted-foreground">我已阅读并同意</Text>
+                    <View className="flex-row flex-wrap gap-x-2">
+                      {POLICIES.map(policy => (
+                        <Pressable key={policy} accessibilityRole="button" accessibilityLabel={`查看${policy}`} className="min-h-11 justify-center py-2 active:opacity-60" onPress={() => setDialog({ title: policy, message: `当前为登录页面演示，正式《${policy}》尚未配置。上线前需接入完整的政策正文。` })}>
+                          <Text dynamicTypeRamp="footnote" style={Typography.footnoteEmphasized} className="text-foreground underline">《{policy}》</Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  </View>
                 </View>
                 {feedback?.field === 'agreement' && <Text dynamicTypeRamp="footnote" style={Typography.footnote} accessibilityLiveRegion="polite" className="text-center text-destructive">{feedback.message}</Text>}
               </View>

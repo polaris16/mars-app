@@ -6,9 +6,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GlassSurface } from '@/components/glass-surface';
 import IOSTabs from '@/components/ios-tabs';
 import { Typography } from '@/constants/typography';
+import { SCREEN_BACKGROUND } from '@/constants/colors';
 
-const ACTIVE_COLOR = '#007AFF';
-const INACTIVE_COLOR = '#737373';
+const ACTIVE_COLOR = '#005CB8';
+const INACTIVE_COLOR = '#616161';
 
 export default function TabLayout() {
   return Platform.OS === 'ios' ? <IOSTabs /> : <GlassTabs />;
@@ -22,7 +23,7 @@ function GlassTabs() {
         headerShown: false,
 
         sceneStyle: {
-          backgroundColor: '#F9F9FF',
+          backgroundColor: SCREEN_BACKGROUND,
         },
 
         tabBarActiveTintColor: ACTIVE_COLOR,
