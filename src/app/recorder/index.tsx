@@ -360,10 +360,6 @@ export default function RecordingPage() {
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [recordingControlsHeight, setRecordingControlsHeight] = useState(160);
 
-  const latestRecording = recordings[0];
-  const canProceed = Boolean(latestRecording?.uri) && !isRecording && !sheetVisible;
-  const photoIconColor = canProceed ? '#171717' : '#8E8E93';
-
   const playerRef = useRef<ReturnType<typeof createAudioPlayer> | null>(null);
 
   // 动态波形
@@ -574,26 +570,22 @@ export default function RecordingPage() {
     router.back();
   };
 
-  // 下一步
-  const handleNext = () => {
+  const handleOpenMedia = () => {
     if (isRecording || sheetVisible) {
       Alert.alert('提示', '请先结束当前录音。');
       return;
     }
 
-    const recording = latestRecording;
-    if (!recording?.uri) {
-      Alert.alert('暂无录音', '请先完成一段录音，再继续发布。');
-      return;
-    }
-
+    const recording = recordings[0];
     router.push({
       pathname: '/recorder/publish',
       params: {
         topic,
-        recordingUri: recording.uri,
-        duration: recording.duration,
-        recordingId: recording.id,
+        ...(recording?.uri ? {
+          recordingUri: recording.uri,
+          duration: recording.duration,
+          recordingId: recording.id,
+        } : {}),
       },
     });
   };
@@ -628,14 +620,12 @@ export default function RecordingPage() {
 
           <GlassToolbar accessibilityLabel="录音工具栏" style={{ columnGap: 8 }}>
             <Pressable
-              disabled={!canProceed}
               accessibilityRole="button"
               accessibilityLabel="添加照片或视频"
-              accessibilityState={{ disabled: !canProceed }}
-              onPress={handleNext}
+              onPress={handleOpenMedia}
               className="h-11 w-11 items-center justify-center rounded-full active:bg-neutral-900/10"
             >
-              <Ionicons name="images-outline" size={24} color={photoIconColor} />
+              <Ionicons name="images-outline" size={24} color="#171717" />
             </Pressable>
 
             <Pressable
