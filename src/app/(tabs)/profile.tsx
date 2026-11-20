@@ -23,19 +23,16 @@ export default function ProfileScreen() {
             <Image source={user?.avatar ? { uri: user.avatar } : DEFAULT_AVATAR_SOURCE} style={styles.avatarImage} />
           </View>
           <Text dynamicTypeRamp="title2" style={styles.name}>{user?.nickname || '个人中心'}</Text>
-          <Text dynamicTypeRamp="subheadline" style={[styles.description, { textAlign: 'center' }]}>管理个人信息及应用设置</Text>
-          <View style={styles.divider} />
-          <View style={styles.note}><Ionicons accessible={false} name="headset-outline" size={16} color="#616161" /><Text dynamicTypeRamp="subheadline" style={[styles.description, { textAlign: 'center', flexShrink: 1 }]}>每一个平凡日常，都值得留声</Text></View>
         </ContentSurface>
         <Text dynamicTypeRamp="footnote" style={styles.sectionTitle}>我的空间</Text>
-        <ContentPressable onPress={() => router.push('/recorder/list')} surfaceStyle={styles.row}>
-          <View style={styles.icon}><Ionicons name="mic-outline" size={22} color="#171717" /></View>
-          <View style={styles.rowContent}><Text dynamicTypeRamp="headline" style={styles.rowTitle}>我的录音</Text><Text dynamicTypeRamp="subheadline" style={styles.description}>查看和管理已完成的录音</Text></View>
-          <Ionicons name="chevron-forward" size={17} color="#616161" />
-        </ContentPressable>
-        <ContentPressable accessibilityLabel="联系人" onPress={() => router.navigate('/contacts')} style={styles.nextRow} surfaceStyle={styles.row}>
+        <ContentPressable accessibilityLabel="联系人" onPress={() => router.navigate('/contacts')} surfaceStyle={styles.row}>
           <View style={[styles.icon, { backgroundColor: accentBlueSubtle }]}><Ionicons name="people-outline" size={22} color={accentBlue} /></View>
           <View style={styles.rowContent}><Text dynamicTypeRamp="headline" style={styles.rowTitle}>联系人</Text><Text dynamicTypeRamp="subheadline" style={styles.description}>查找和管理联系人</Text></View>
+          <Ionicons name="chevron-forward" size={17} color="#616161" />
+        </ContentPressable>
+        <ContentPressable accessibilityLabel="权益" onPress={() => router.navigate('/benefits')} style={styles.nextRow} surfaceStyle={styles.row}>
+          <View style={[styles.icon, { backgroundColor: accentBlueSubtle }]}><Ionicons name="gift-outline" size={22} color={accentBlue} /></View>
+          <View style={styles.rowContent}><Text dynamicTypeRamp="headline" style={styles.rowTitle}>权益</Text><Text dynamicTypeRamp="subheadline" style={styles.description}>查看专属服务与权益</Text></View>
           <Ionicons name="chevron-forward" size={17} color="#616161" />
         </ContentPressable>
         {__DEV__ && <>
@@ -53,16 +50,14 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   fill: { flex: 1 },
-  content: { padding: 24, maxWidth: 640, width: '100%', alignSelf: 'center' },
+  content: { paddingHorizontal: 24, paddingTop: 16, maxWidth: 640, width: '100%', alignSelf: 'center' },
   title: { ...Typography.largeTitle, color: '#0A0A0A' },
   subtitle: { ...Typography.subhead, marginTop: 6, marginBottom: 28, color: '#616161' },
   profile: { padding: 28, alignItems: 'center', marginBottom: 30, borderRadius: 28 },
   avatar: { width: 80, height: 80, borderRadius: 40, alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderWidth: 3, borderColor: '#FFFFFF' },
   avatarImage: { width: 80, height: 80 },
-  name: { ...Typography.title2, marginTop: 16, marginBottom: 6, color: '#171717', textAlign: 'center' },
+  name: { ...Typography.title2, marginTop: 16, color: '#171717', textAlign: 'center' },
   description: { ...Typography.subhead, color: '#616161' },
-  divider: { width: '100%', height: 1, backgroundColor: '#E5E5E5', marginVertical: 20 },
-  note: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: 7 },
   sectionTitle: { ...Typography.footnoteEmphasized, color: '#616161', marginBottom: 12 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 18, borderRadius: 22 },
   nextRow: { marginTop: 12 },

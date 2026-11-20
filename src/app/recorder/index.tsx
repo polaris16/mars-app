@@ -1,8 +1,8 @@
 import { Typography } from '@/constants/typography';
 import { SCREEN_BACKGROUND } from '@/constants/colors';
+import { BottomSlideModal } from '@/components/bottom-slide-modal';
 import { GlassBackToolbar } from '@/components/glass-back-toolbar';
 import { GlassPressable, GlassToolbar } from '@/components/glass-surface';
-import { useGlassAccessibility } from '@/components/ui/liquid-glass';
 import { useTheme } from '@/hooks/use-theme';
 
 import { Ionicons } from '@expo/vector-icons';
@@ -10,7 +10,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import {
     Alert,
-    Modal,
     Pressable,
     ScrollView,
     StatusBar,
@@ -231,16 +230,9 @@ function RecordingSheet({
   onStop: () => void;
 }) {
   const insets = useSafeAreaInsets();
-  const { reduceMotion } = useGlassAccessibility();
   const { accentBlue, accentBlueMuted } = useTheme();
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType={reduceMotion ? 'none' : 'slide'}
-      statusBarTranslucent
-      onRequestClose={onClose}
-    >
+    <BottomSlideModal visible={visible} onClose={onClose}>
       <View className="flex-1 justify-end">
         {/* 背景遮罩 */}
         <Pressable
@@ -322,7 +314,7 @@ function RecordingSheet({
           </View>
         </ScrollView>
       </View>
-    </Modal>
+    </BottomSlideModal>
   );
 }
 

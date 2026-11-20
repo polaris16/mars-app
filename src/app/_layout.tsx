@@ -26,6 +26,7 @@ export default function RootLayout() {
               <Stack.Screen name="(tabs)" />
               <Stack.Screen name="recorder" />
               <Stack.Screen name="contacts" />
+              <Stack.Screen name="benefits" />
             </Stack>
           </GlassAccessibilityProvider>
         </AuthProvider>
