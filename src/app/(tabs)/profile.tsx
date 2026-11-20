@@ -33,6 +33,11 @@ export default function ProfileScreen() {
           <View style={styles.rowContent}><Text dynamicTypeRamp="headline" style={styles.rowTitle}>我的录音</Text><Text dynamicTypeRamp="subheadline" style={styles.description}>查看和管理已完成的录音</Text></View>
           <Ionicons name="chevron-forward" size={17} color="#616161" />
         </ContentPressable>
+        <ContentPressable accessibilityLabel="联系人" onPress={() => router.navigate('/contacts')} style={styles.nextRow} surfaceStyle={styles.row}>
+          <View style={[styles.icon, { backgroundColor: accentBlueSubtle }]}><Ionicons name="people-outline" size={22} color={accentBlue} /></View>
+          <View style={styles.rowContent}><Text dynamicTypeRamp="headline" style={styles.rowTitle}>联系人</Text><Text dynamicTypeRamp="subheadline" style={styles.description}>查找和管理联系人</Text></View>
+          <Ionicons name="chevron-forward" size={17} color="#616161" />
+        </ContentPressable>
         {__DEV__ && <>
           <Text dynamicTypeRamp="footnote" style={[styles.sectionTitle, { marginTop: 28 }]}>开发调试</Text>
           <ContentPressable onPress={() => router.push('/debug/debug_store')} surfaceStyle={styles.row}>
@@ -60,6 +65,7 @@ const styles = StyleSheet.create({
   note: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: 7 },
   sectionTitle: { ...Typography.footnoteEmphasized, color: '#616161', marginBottom: 12 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 18, borderRadius: 22 },
+  nextRow: { marginTop: 12 },
   rowContent: { flex: 1, gap: 4 },
   rowTitle: { ...Typography.headline, color: '#171717' },
   icon: { width: 44, height: 44, borderRadius: 14, backgroundColor: '#F5F5F5', alignItems: 'center', justifyContent: 'center' },
