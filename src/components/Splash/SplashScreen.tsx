@@ -74,7 +74,8 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
 
             <View style={styles.copyGroup}>
               <Text dynamicTypeRamp="title3" style={styles.subtitle}>此刻，即美好</Text>
-              <Text dynamicTypeRamp="subheadline" style={styles.description}>M · 陪伴 · 温暖 · 美好时刻</Text>
+              <Text dynamicTypeRamp="subheadline" style={styles.description}>M · 陪伴 · 温暖 · 喜乐
+              </Text>
             </View>
           </Animated.View>
         </ScrollView>

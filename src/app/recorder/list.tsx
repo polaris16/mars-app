@@ -1,5 +1,7 @@
 import { Typography } from '@/constants/typography';
 import { ContentSurface } from '@/components/content-surface';
+import { GlassBackToolbar } from '@/components/glass-back-toolbar';
+import { RecordingEmptyState } from '@/components/recording-empty-state';
 import { SCREEN_BACKGROUND } from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -105,11 +107,8 @@ export default function RecordingListPage() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: SCREEN_BACKGROUND }} edges={['top', 'bottom']}>
       <StatusBar barStyle="dark-content" />
-      <View style={{ minHeight: 56, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 8 }}>
-        <Pressable className="active:opacity-60" onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="返回" style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
-          <Ionicons name="chevron-back" size={23} color="#1B1C1C" />
-        </Pressable>
-        <Text accessibilityRole="header" dynamicTypeRamp="headline" style={{ ...Typography.headline, marginLeft: 4, flexShrink: 1, color: '#1B1C1C' }}>历史</Text>
+      <View className="min-h-16 flex-row items-center px-4 py-2">
+        <GlassBackToolbar title="历史" onBack={() => router.back()} />
       </View>
 
       {loading && recordings.length === 0 ? (
@@ -118,6 +117,10 @@ export default function RecordingListPage() {
         <Pressable onPress={() => void loadFirstPage()} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
           <Text dynamicTypeRamp="body" style={{ ...Typography.body, textAlign: 'center', color: '#B42318' }}>{error} 点击重试</Text>
         </Pressable>
+      ) : recordings.length === 0 ? (
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+          <RecordingEmptyState icon="document-text-outline" />
+        </ScrollView>
       ) : <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 10, paddingBottom: 32 }}
@@ -155,10 +158,9 @@ export default function RecordingListPage() {
             </ContentSurface>
           </Pressable>
         ))}
-        {recordings.length === 0 && !loading ? <Text dynamicTypeRamp="body" style={{ ...Typography.body, paddingVertical: 40, textAlign: 'center', color: '#616161' }}>暂无记录</Text> : null}
         {loadingMore ? <ActivityIndicator style={{ paddingVertical: 16 }} color="#616161" /> : null}
-        {error && recordings.length > 0 ? <Pressable onPress={() => void loadMore()}><Text dynamicTypeRamp="caption1" style={{ ...Typography.caption1, paddingVertical: 16, textAlign: 'center', color: '#B42318' }}>{error} 点击重试</Text></Pressable> : null}
-        {recordings.length > 0 && recordings.length >= total ? <Text dynamicTypeRamp="caption1" style={{ ...Typography.caption1, paddingVertical: 16, textAlign: 'center', color: '#616161' }}>没有更多数据了</Text> : null}
+        {error ? <Pressable onPress={() => void loadMore()}><Text dynamicTypeRamp="caption1" style={{ ...Typography.caption1, paddingVertical: 16, textAlign: 'center', color: '#B42318' }}>{error} 点击重试</Text></Pressable> : null}
+        {recordings.length >= total ? <Text dynamicTypeRamp="caption1" style={{ ...Typography.caption1, paddingVertical: 16, textAlign: 'center', color: '#616161' }}>没有更多数据了</Text> : null}
       </ScrollView>}
     </SafeAreaView>
   );

@@ -16,17 +16,17 @@ import { loadContactDirectory, saveContactDirectory } from '@/services/contacts-
 import { useAuth } from '@/store/AuthContext';
 
 type DirectoryRow =
-  | { kind: 'heading'; key: string; title: string; icon?: 'star-outline' }
+  | { kind: 'heading'; key: string; title: string }
   | { kind: 'entry'; key: string; contact: Contact; first: boolean; last: boolean };
 
 function buildRows(results: ReturnType<typeof organizeContacts>, searching: boolean) {
   const rows: DirectoryRow[] = [];
   const headings: number[] = [];
 
-  const addSection = (key: string, title: string, contacts: Contact[], icon?: 'star-outline') => {
+  const addSection = (key: string, title: string, contacts: Contact[]) => {
     if (!contacts.length) return;
     headings.push(rows.length);
-    rows.push({ kind: 'heading', key, title, icon });
+    rows.push({ kind: 'heading', key, title });
     contacts.forEach((contact, index) => {
       rows.push({ kind: 'entry', key: `${key}-${contact.id}`, contact, first: index === 0, last: index === contacts.length - 1 });
     });
@@ -35,7 +35,6 @@ function buildRows(results: ReturnType<typeof organizeContacts>, searching: bool
   if (searching) {
     addSection('results', '联系人', results.contacts);
   } else {
-    addSection('starred', '星标朋友', results.starred, 'star-outline');
     results.sections.forEach(({ letter, contacts }) => {
       addSection(letter, letter, contacts);
     });
@@ -57,7 +56,7 @@ function ContactDirectoryScreen({ accountId }: { accountId: string }) {
   const [directory, setDirectory] = useState<ContactDirectory | null>(null);
   const [query, setQuery] = useState('');
   const [showDictationHint, setShowDictationHint] = useState(false);
-  const [panel, setPanel] = useState<ContactsPanel | null>(null);
+  const [sheet, setSheet] = useState<{ panel: ContactsPanel; visible: boolean } | null>(null);
   const [error, setError] = useState(false);
   const [saveError, setSaveError] = useState('');
   const [loadAttempt, setLoadAttempt] = useState(0);
@@ -96,7 +95,12 @@ function ContactDirectoryScreen({ accountId }: { accountId: string }) {
   const openPanel = (next: ContactsPanel) => {
     Keyboard.dismiss();
     setSaveError('');
-    setPanel(next);
+    setSheet({ panel: next, visible: true });
+  };
+
+  const closePanel = () => {
+    Keyboard.dismiss();
+    setSheet(current => current && { ...current, visible: false });
   };
 
   const changeQuery = (value: string) => {
@@ -186,7 +190,7 @@ function ContactDirectoryScreen({ accountId }: { accountId: string }) {
           </View>
 
           {directory && !searching && (
-            <ContentPressable style={styles.requestsOuter} surfaceStyle={styles.requests} accessibilityLabel={`新的朋友，${directory.requests.length} 条好友申请`} onPress={() => openPanel({ kind: 'requests' })}>
+            <ContentPressable style={styles.requestsOuter} surfaceStyle={styles.requests} accessibilityLabel={`新的朋友，${directory.requests.length} 条好友申请`} onPress={() => {}}>
               <View style={[styles.requestIcon, { backgroundColor: accentBlueSubtle }]}>
                 <Ionicons name="person-add-outline" size={22} color={accentBlue} accessible={false} />
               </View>
@@ -213,11 +217,10 @@ function ContactDirectoryScreen({ accountId }: { accountId: string }) {
               showsVerticalScrollIndicator={false}
               renderItem={({ item }) => item.kind === 'heading' ? (
                 <View style={[styles.sectionHeading, { height: headingHeight }]}>
-                  {item.icon && <Ionicons name={item.icon} size={17} color={accentBlue} accessible={false} />}
                   <Text accessibilityRole="header" dynamicTypeRamp="footnote" style={styles.sectionLabel}>{item.title}</Text>
                 </View>
               ) : (
-                <DirectoryEntry row={item} height={entryHeight} onPress={() => openPanel({ kind: 'contact', id: item.contact.id })} />
+                <DirectoryEntry row={item} height={entryHeight} onPress={() => {}} />
               )}
               ListEmptyComponent={(
                 <ContentSurface style={styles.empty}>
@@ -233,7 +236,7 @@ function ContactDirectoryScreen({ accountId }: { accountId: string }) {
               )}
               ListFooterComponent={searching ? undefined : (
                 <Text dynamicTypeRamp="footnote" style={styles.footer}>
-                  {directory.contacts.length} 位联系人 · {directory.contacts.some(contact => contact.id.startsWith('demo-')) ? '含本机示例数据' : '保存在此设备'}
+                  {directory.contacts.length} 位联系人
                 </Text>
               )}
             />
@@ -251,8 +254,17 @@ function ContactDirectoryScreen({ accountId }: { accountId: string }) {
           )}
         </View>
 
-        {directory && panel && (
-          <ContactsSheet panel={panel} directory={directory} onClose={() => setPanel(null)} onAdd={addContact} onAccept={acceptContact} onStar={toggleStar} saveError={saveError} />
+        {directory && sheet && (
+          <ContactsSheet
+            visible={sheet.visible}
+            panel={sheet.panel}
+            directory={directory}
+            onClose={closePanel}
+            onAdd={addContact}
+            onAccept={acceptContact}
+            onStar={toggleStar}
+            saveError={saveError}
+          />
         )}
       </SafeAreaView>
     </GlassScreen>

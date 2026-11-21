@@ -1,19 +1,17 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { type ReactNode, useEffect, useState } from 'react';
-import { Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Keyboard, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { BottomSlideModal } from '@/components/bottom-slide-modal';
+import { BottomSheet, BottomSheetForm } from '@/components/bottom-sheet';
 import { ContentSurface } from '@/components/content-surface';
 import { GlassBackToolbar } from '@/components/glass-back-toolbar';
 import { GlassPressable, GlassScreen } from '@/components/glass-surface';
 import { Typography } from '@/constants/typography';
 import { useTheme } from '@/hooks/use-theme';
-import { demoBenefitPlans, demoCodePlan, demoServiceCode, loadDemoBinding, saveDemoBinding, type Benefit, type BenefitManager, type BenefitPlan } from '@/services/benefits';
+import { demoBenefitPlans, demoCodePlan, demoServiceCode, loadDemoBinding, saveDemoBinding, type BenefitPlan } from '@/services/benefits';
 import { useAuth } from '@/store/AuthContext';
-
-type BenefitsPanel = { kind: 'binding' } | { kind: 'manager'; manager: BenefitManager };
 
 export default function BenefitsScreen() {
   const { user } = useAuth();
@@ -26,7 +24,7 @@ function BenefitsPage({ accountId }: { accountId: string }) {
   const [selectedId, setSelectedId] = useState(demoBenefitPlans[0].id);
   const [hasBinding, setHasBinding] = useState(false);
   const [bindingLoaded, setBindingLoaded] = useState(false);
-  const [panel, setPanel] = useState<BenefitsPanel | null>(null);
+  const [showBinding, setShowBinding] = useState(false);
   const [notice, setNotice] = useState('');
 
   useEffect(() => {
@@ -41,6 +39,11 @@ function BenefitsPage({ accountId }: { accountId: string }) {
   const plans = hasBinding ? [...demoBenefitPlans, demoCodePlan] : demoBenefitPlans;
   const selected = plans.find(plan => plan.id === selectedId) ?? plans[0];
 
+  const closeBinding = () => {
+    Keyboard.dismiss();
+    setShowBinding(false);
+  };
+
   const bindServiceCode = (code: string) => {
     if (code.trim().toUpperCase() !== demoServiceCode) return '服务码无效，请检查后重试。';
     if (hasBinding) return '该服务码已绑定。';
@@ -54,8 +57,7 @@ function BenefitsPage({ accountId }: { accountId: string }) {
     setHasBinding(true);
     setSelectedId(demoCodePlan.id);
     setNotice('已绑定美刻体验计划。');
-    Keyboard.dismiss();
-    setPanel(null);
+    closeBinding();
     return '';
   };
 
@@ -65,9 +67,8 @@ function BenefitsPage({ accountId }: { accountId: string }) {
         <View style={styles.container}>
           <View style={styles.header}>
             <GlassBackToolbar title="权益" onBack={() => router.canGoBack() ? router.back() : router.replace('/(tabs)/profile')} />
-            <GlassPressable disabled={!bindingLoaded} accessibilityLabel="添加" onPress={() => setPanel({ kind: 'binding' })} surfaceStyle={styles.bindingButton}>
-              <Ionicons name="add" size={20} color="#171717" accessible={false} />
-              <Text dynamicTypeRamp="subheadline" style={styles.actionLabel}>添加</Text>
+            <GlassPressable disabled={!bindingLoaded} accessibilityLabel="添加" onPress={() => setShowBinding(true)} surfaceStyle={styles.addButton}>
+              <Ionicons name="add" size={24} color={bindingLoaded ? '#171717' : '#8E8E93'} accessible={false} />
             </GlassPressable>
           </View>
 
@@ -93,33 +94,27 @@ function BenefitsPage({ accountId }: { accountId: string }) {
 
             {notice ? <Text accessibilityLiveRegion="polite" dynamicTypeRamp="subheadline" style={styles.notice}>{notice}</Text> : null}
 
-            <PlanCard
-              plan={selected}
-              onUse={benefit => router.push({ pathname: '/recorder', params: { topic: `${benefit.title} · ${selected.institution}` } })}
-              onContact={manager => setPanel({ kind: 'manager', manager })}
-            />
+            <PlanCard plan={selected} />
           </ScrollView>
         </View>
       </SafeAreaView>
 
-      {panel?.kind === 'binding' && (
-        <BenefitSheet title="添加" onClose={() => setPanel(null)}>
-          <BindingForm onBind={bindServiceCode} />
-        </BenefitSheet>
-      )}
-      {panel?.kind === 'manager' && (
-        <BenefitSheet title="联系客户经理" onClose={() => setPanel(null)}>
-          <Text dynamicTypeRamp="title3" style={styles.title}>{panel.manager.name} · {panel.manager.role}</Text>
-          <Text dynamicTypeRamp="body" style={styles.secondary}>{panel.manager.description}</Text>
-          <Text dynamicTypeRamp="subheadline" style={styles.secondary}>这是演示联系人，暂无可用联系方式。</Text>
-          <DarkButton label="完成" onPress={() => setPanel(null)} />
-        </BenefitSheet>
-      )}
+      <BottomSheet
+        visible={showBinding}
+        title="添加"
+        closeLabel="取消"
+        closeVariant="glass-icon"
+        onClose={closeBinding}
+        dismissOnBackdropPress
+        avoidKeyboard
+      >
+        <BindingForm onBind={bindServiceCode} />
+      </BottomSheet>
     </GlassScreen>
   );
 }
 
-function PlanCard({ plan, onUse, onContact }: { plan: BenefitPlan; onUse: (benefit: Benefit) => void; onContact: (manager: BenefitManager) => void }) {
+function PlanCard({ plan }: { plan: BenefitPlan }) {
   const { accentBlue, accentBlueSubtle } = useTheme();
   const usedCount = plan.benefits.filter(benefit => benefit.used).length;
   const year = new Date().getFullYear();
@@ -157,7 +152,6 @@ function PlanCard({ plan, onUse, onContact }: { plan: BenefitPlan; onUse: (benef
                 label={benefit.used ? '已使用' : '去使用'}
                 accessibilityLabel={`${benefit.title}，${benefit.used ? '已使用' : '去使用'}`}
                 disabled={benefit.used}
-                onPress={benefit.used ? undefined : () => onUse(benefit)}
               />
             </View>
           </View>
@@ -179,7 +173,7 @@ function PlanCard({ plan, onUse, onContact }: { plan: BenefitPlan; onUse: (benef
               <Text dynamicTypeRamp="headline" style={styles.itemTitle}>{manager.name}</Text>
               <Text dynamicTypeRamp="footnote" style={styles.secondary}>{manager.role} · {manager.description}</Text>
             </View>
-            <DarkButton label="联系" accessibilityLabel={`联系${manager.name}`} onPress={() => onContact(manager)} />
+            <DarkButton label="联系" accessibilityLabel={`联系${manager.name}`} />
           </View>
         ))}
       </View>
@@ -201,31 +195,6 @@ function DarkButton({ label, accessibilityLabel, disabled, onPress }: { label: s
   );
 }
 
-function BenefitSheet({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
-  return (
-    <BottomSlideModal onClose={onClose}>
-      <SafeAreaView edges={['top', 'left', 'right']} style={styles.backdrop}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessible={false} importantForAccessibility="no" />
-        <KeyboardAvoidingView pointerEvents="box-none" behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.sheetArea}>
-          <ContentSurface accessibilityViewIsModal style={styles.sheet}>
-            <SafeAreaView edges={['bottom']} style={styles.sheetContent}>
-              <View style={styles.sectionHeading}>
-                <Text accessibilityRole="header" dynamicTypeRamp="title2" style={[styles.title, Typography.title2]}>{title}</Text>
-                <Pressable accessibilityRole="button" accessibilityLabel="关闭" onPress={onClose} style={styles.close}>
-                  <Ionicons name="close" size={22} color="#404040" />
-                </Pressable>
-              </View>
-              <ScrollView keyboardShouldPersistTaps="handled" style={styles.sheetScroll} contentContainerStyle={styles.section}>
-                {children}
-              </ScrollView>
-            </SafeAreaView>
-          </ContentSurface>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </BottomSlideModal>
-  );
-}
-
 function BindingForm({ onBind }: { onBind: (code: string) => string }) {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
@@ -234,13 +203,13 @@ function BindingForm({ onBind }: { onBind: (code: string) => string }) {
   };
 
   return (
-    <>
+    <BottomSheetForm submitLabel="绑定" submitDisabled={!code.trim()} onSubmit={submit}>
       <TextInput
         value={code}
         onChangeText={value => { setCode(value); setError(''); }}
         onSubmitEditing={submit}
-        accessibilityLabel="服务码"
-        placeholder="请输入服务码"
+        accessibilityLabel="兑换码"
+        placeholder="请输入兑换码"
         placeholderTextColor="#616161"
         autoCapitalize="characters"
         autoCorrect={false}
@@ -248,10 +217,8 @@ function BindingForm({ onBind }: { onBind: (code: string) => string }) {
         returnKeyType="done"
         style={styles.input}
       />
-      <Text dynamicTypeRamp="footnote" style={styles.secondary}>演示服务码 {demoServiceCode}</Text>
       {error ? <Text accessibilityLiveRegion="polite" dynamicTypeRamp="subheadline" style={styles.error}>{error}</Text> : null}
-      <DarkButton label="绑定" disabled={!code.trim()} onPress={submit} />
-    </>
+    </BottomSheetForm>
   );
 }
 
@@ -259,7 +226,7 @@ const styles = StyleSheet.create({
   fill: { flex: 1 },
   container: { flex: 1, alignSelf: 'center', width: '100%', maxWidth: 680 },
   header: { minHeight: 64, paddingHorizontal: 16, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
-  bindingButton: { minHeight: 44, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, borderRadius: 24 },
+  addButton: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   content: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32, gap: 12 },
   filters: { gap: 8, paddingVertical: 4, paddingRight: 2 },
   filter: { minHeight: 44, borderRadius: 24, paddingHorizontal: 13, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: '#FFFFFF', borderWidth: StyleSheet.hairlineWidth, borderColor: '#D4D4D4' },
@@ -285,12 +252,6 @@ const styles = StyleSheet.create({
   validity: { ...Typography.footnote, color: '#616161', flexShrink: 1 },
   manager: { flexDirection: 'row', alignItems: 'center' },
   button: { minHeight: 44, paddingHorizontal: 13, paddingVertical: 8, borderRadius: 22, backgroundColor: '#171717', alignItems: 'center', justifyContent: 'center' },
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' },
-  sheetArea: { flex: 1, justifyContent: 'flex-end', alignItems: 'center' },
-  sheet: { width: '100%', maxWidth: 540, maxHeight: '90%', flexShrink: 1, borderRadius: 0, borderTopLeftRadius: 32, borderTopRightRadius: 32 },
-  sheetContent: { flexShrink: 1, padding: 20, gap: 12 },
-  sheetScroll: { flexGrow: 0 },
-  close: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#F2F2F7', alignItems: 'center', justifyContent: 'center' },
   input: { ...Typography.body, minHeight: 48, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 16, backgroundColor: '#F2F2F7', color: '#171717' },
   error: { ...Typography.subhead, color: '#B42318' },
 });

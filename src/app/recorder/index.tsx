@@ -1,12 +1,14 @@
 import { Typography } from '@/constants/typography';
 import { SCREEN_BACKGROUND } from '@/constants/colors';
-import { BottomSlideModal } from '@/components/bottom-slide-modal';
+import { BottomSheet, BottomSheetScrollView } from '@/components/bottom-sheet';
 import { GlassBackToolbar } from '@/components/glass-back-toolbar';
 import { GlassPressable, GlassToolbar } from '@/components/glass-surface';
+import { RecordingEmptyState } from '@/components/recording-empty-state';
+import { useGlassAccessibility } from '@/components/ui/liquid-glass';
 import { useTheme } from '@/hooks/use-theme';
 
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, usePreventRemove, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import {
     Alert,
@@ -16,7 +18,7 @@ import {
     Text,
     View
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
     AudioModule,
@@ -217,104 +219,80 @@ function RecordingCard({
 function RecordingSheet({
   visible,
   isRecording,
+  isStopping,
   seconds,
   waveHeights,
-  onClose,
   onStop,
 }: {
   visible: boolean;
   isRecording: boolean;
+  isStopping: boolean;
   seconds: number;
   waveHeights: number[];
-  onClose: () => void;
   onStop: () => void;
 }) {
-  const insets = useSafeAreaInsets();
   const { accentBlue, accentBlueMuted } = useTheme();
+  const elapsed = formatTime(seconds);
+
   return (
-    <BottomSlideModal visible={visible} onClose={onClose}>
-      <View className="flex-1 justify-end">
-        {/* 背景遮罩 */}
-        <Pressable
-          className="absolute inset-0 bg-black/40"
-          pointerEvents="none"
-        />
-
-        {/* 弹层主体 */}
-        <ScrollView
-          accessibilityViewIsModal
-          style={{ flexGrow: 0, maxHeight: '90%', backgroundColor: '#FFFFFF', borderTopLeftRadius: 32, borderTopRightRadius: 32 }}
-          contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 12, paddingBottom: Math.max(insets.bottom, 16) + 16 }}
+    <BottomSheet visible={visible}>
+      <BottomSheetScrollView
+        automaticallyAdjustContentInsets={false}
+        alwaysBounceVertical={false}
+        contentContainerStyle={{ gap: 12, paddingTop: 12, paddingBottom: 4 }}
+      >
+        <Text
+          accessibilityLabel={`录音时长 ${elapsed}`}
+          dynamicTypeRamp="largeTitle"
+          className="text-center"
+          style={{ ...Typography.largeTitle, fontVariant: ['tabular-nums'], color: '#111111' }}
         >
-          {/* 拖动指示条 */}
-          <View className="h-3 w-full items-center justify-center">
-            <View className="h-1 w-10 rounded-full bg-neutral-300" />
+          {elapsed}
+        </Text>
+
+        <View
+          accessible={false}
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+          className="h-16 flex-row items-center justify-center gap-1 overflow-hidden rounded-2xl bg-[#F3F4F6]"
+        >
+          {waveHeights.map((height, index) => (
+            <View
+              key={index}
+              style={{
+                width: 3,
+                height,
+                backgroundColor: isRecording ? accentBlue : accentBlueMuted,
+                borderRadius: 4,
+              }}
+            />
+          ))}
+        </View>
+
+        <View className="flex-row flex-wrap items-center justify-center gap-x-5 gap-y-2">
+          <View className="flex-row items-center gap-1.5">
+            <Ionicons name="stats-chart-outline" size={15} color="#616161" accessible={false} />
+            <Text dynamicTypeRamp="footnote" style={{ ...Typography.footnote, color: '#4B5563' }}>48.0 kHz</Text>
           </View>
-
-          {/* 计时器 */}
-          <Text dynamicTypeRamp="largeTitle" className="my-3 text-center" style={{ ...Typography.largeTitle, fontVariant: ['tabular-nums'], color: '#111111' }}>
-            {formatTime(seconds)}
-          </Text>
-
-          {/* 动态波形 */}
-          <View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" className="h-14 w-full flex-row items-center justify-center gap-[4px] overflow-hidden px-3">
-            {waveHeights.map((height, index) => (
-              <View
-                key={index}
-                style={{
-                  width: 3,
-                  height,
-                  backgroundColor: isRecording ? accentBlue : accentBlueMuted,
-                  borderRadius: 4,
-                }}
-              />
-            ))}
+          <View className="flex-row items-center gap-1.5">
+            <Ionicons name="mic-outline" size={15} color="#616161" accessible={false} />
+            <Text dynamicTypeRamp="footnote" style={{ ...Typography.footnote, color: '#4B5563' }}>智能降噪开启</Text>
           </View>
+        </View>
+      </BottomSheetScrollView>
 
-          {/* 录音参数 */}
-          <View className="mt-4 flex-row flex-wrap items-center justify-center gap-4">
-            <View className="flex-row items-center gap-1.5">
-              <Ionicons
-                name="stats-chart-outline"
-                size={15}
-                color="#616161"
-              />
-              <Text dynamicTypeRamp="footnote" style={{ ...Typography.footnote, color: '#4B5563' }}>
-                48.0 kHz
-              </Text>
-            </View>
-
-            <Text dynamicTypeRamp="footnote" style={Typography.footnote} className="text-neutral-300">•</Text>
-
-            <View className="flex-row items-center gap-1.5">
-              <Ionicons
-                name="mic-outline"
-                size={15}
-                color="#616161"
-              />
-              <Text dynamicTypeRamp="footnote" style={{ ...Typography.footnote, color: '#4B5563' }}>
-                智能降噪开启
-              </Text>
-            </View>
-          </View>
-
-          {/* 主操作按钮 */}
-          <View className="mt-7 w-full">
-            <Pressable
-              onPress={onStop}
-              accessibilityRole="button"
-              accessibilityLabel="停止录音并保存"
-              className="min-h-[52px] w-full flex-row items-center justify-center gap-2 rounded-full bg-neutral-900 px-4 py-3 active:bg-neutral-700"
-            >
-              <View className="h-3.5 w-3.5 rounded-sm bg-white" />
-              <Text dynamicTypeRamp="headline" style={Typography.headline} className="text-white">
-                停止录音
-              </Text>
-            </Pressable>
-          </View>
-        </ScrollView>
-      </View>
-    </BottomSlideModal>
+      <Pressable
+        onPress={onStop}
+        disabled={isStopping}
+        accessibilityRole="button"
+        className="min-h-[52px] shrink-0 flex-row items-center justify-center gap-2 rounded-full bg-neutral-900 px-4 py-3 active:bg-neutral-700 disabled:opacity-50"
+      >
+        <View className="h-3.5 w-3.5 shrink-0 rounded-sm bg-white" />
+        <Text dynamicTypeRamp="headline" style={Typography.headline} className="shrink text-center text-white">
+          {isStopping ? '正在保存…' : '停止并保存'}
+        </Text>
+      </Pressable>
+    </BottomSheet>
   );
 }
 
@@ -346,20 +324,23 @@ export default function RecordingPage() {
   );
 
   // 页面状态
-  const [sheetVisible, setSheetVisible] = useState(false);
+  const [recordingPhase, setRecordingPhase] = useState<'idle' | 'starting' | 'active' | 'stopping'>('idle');
   const [recordings, setRecordings] = useState<RecordingItem[]>([]);
   const [waveHeights, setWaveHeights] = useState(REST_WAVE);
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [recordingControlsHeight, setRecordingControlsHeight] = useState(160);
+  const { reduceMotion } = useGlassAccessibility();
+  const recordingInProgress = recordingPhase !== 'idle';
+  const sheetVisible = recordingPhase === 'active' || recordingPhase === 'stopping';
+  const animateWaveform = isRecording && sheetVisible && !reduceMotion;
 
   const playerRef = useRef<ReturnType<typeof createAudioPlayer> | null>(null);
 
+  usePreventRemove(recordingInProgress);
+
   // 动态波形
   useEffect(() => {
-    if (!isRecording || !sheetVisible) {
-      setWaveHeights(REST_WAVE);
-      return;
-    }
+    if (!animateWaveform) return;
 
     const interval = setInterval(() => {
       setWaveHeights(
@@ -371,7 +352,7 @@ export default function RecordingPage() {
     }, 120);
 
     return () => clearInterval(interval);
-  }, [isRecording, sheetVisible]);
+  }, [animateWaveform]);
 
   // 清理播放器
   useEffect(() => {
@@ -383,11 +364,14 @@ export default function RecordingPage() {
 
   // 开始录音
   const startRecording = async () => {
+    if (recordingInProgress) return;
+    setRecordingPhase('starting');
     try {
       const permission =
         await AudioModule.requestRecordingPermissionsAsync();
 
       if (!permission.granted) {
+        setRecordingPhase('idle');
         Alert.alert(
           '麦克风权限',
           '请在系统设置中允许应用访问麦克风。'
@@ -403,24 +387,11 @@ export default function RecordingPage() {
       await recorder.prepareToRecordAsync();
       recorder.record();
 
-      setSheetVisible(true);
+      setRecordingPhase('active');
     } catch (error) {
+      setRecordingPhase('idle');
       console.error('开始录音失败：', error);
       Alert.alert('录音失败', '无法启动麦克风，请检查设备权限。');
-    }
-  };
-
-  // 暂停与继续
-  const pauseResumeRecording = () => {
-    try {
-      if (isRecording) {
-        recorder.pause();
-      } else {
-        recorder.record();
-      }
-    } catch (error) {
-      console.error('录音状态切换失败：', error);
-      Alert.alert('操作失败', '无法切换录音状态。');
     }
   };
 
@@ -443,6 +414,8 @@ export default function RecordingPage() {
 
   // 停止并保存
   const stopRecording = async () => {
+    if (recordingPhase !== 'active') return;
+    setRecordingPhase('stopping');
     try {
       const durationMillis = recorderState.durationMillis || 0;
 
@@ -468,9 +441,10 @@ export default function RecordingPage() {
         ]);
       }
 
-      setSheetVisible(false);
+      setRecordingPhase('idle');
       setWaveHeights(REST_WAVE);
     } catch (error) {
+      setRecordingPhase('active');
       console.error('保存录音失败：', error);
       Alert.alert('保存失败', '音频文件未能成功保存。');
     }
@@ -563,7 +537,7 @@ export default function RecordingPage() {
   };
 
   const handleOpenMedia = () => {
-    if (isRecording || sheetVisible) {
+    if (recordingInProgress) {
       Alert.alert('提示', '请先结束当前录音。');
       return;
     }
@@ -580,17 +554,6 @@ export default function RecordingPage() {
         } : {}),
       },
     });
-  };
-
-  // 中央录音按钮
-  const handleMasterButton = () => {
-    if (isRecording) {
-      stopRecording();
-    } else if (sheetVisible) {
-      pauseResumeRecording();
-    } else {
-      startRecording();
-    }
   };
 
   return (
@@ -646,48 +609,27 @@ export default function RecordingPage() {
               paddingBottom: recordingControlsHeight + 24,
             }}
           >
-            {/* 列表标题 */}
-            <View className="mb-4 min-h-8 flex-row items-center justify-between px-1">
-              <Text dynamicTypeRamp="caption1" style={{ ...Typography.caption1, color: '#616161' }}>共 {recordings.length} 条</Text>
-            </View>
-
-            {/* 录音卡片列表 */}
-            <View className="gap-3">
-              {recordings.map(item => (
-                <RecordingCard
-                  key={item.id}
-                  item={item}
-                  playing={playingId === item.id}
-                  onPlay={() => playRecording(item)}
-                  onShare={() => shareRecording(item)}
-                  onMore={() => showMoreActions(item)}
-                />
-              ))}
-
-              {/* 空状态 */}
-              {recordings.length === 0 && (
-                <View
-                  className="items-center justify-center px-5 py-12"
-                  style={{ borderRadius: 28, backgroundColor: '#FFFFFF' }}
-                >
-                  <View className="mb-4 h-16 w-16 items-center justify-center rounded-full bg-muted">
-                    <Ionicons
-                      name="mic-outline"
-                      size={28}
-                      color="#6B6B6B"
-                    />
-                  </View>
-
-                  <Text dynamicTypeRamp="headline" style={{ ...Typography.headline, color: '#111111' }}>
-                    暂无记录
-                  </Text>
-
-                  <Text dynamicTypeRamp="subheadline" className="mt-2 text-center" style={{ ...Typography.subhead, color: '#4B5563' }}>
-                    随心记录灵感与心声
-                  </Text>
+            {recordings.length === 0 ? (
+              <RecordingEmptyState icon="mic-outline" description="点按下方麦克风开始录音" />
+            ) : (
+              <>
+                <View className="mb-4 min-h-8 flex-row items-center justify-between px-1">
+                  <Text dynamicTypeRamp="caption1" style={{ ...Typography.caption1, color: '#616161' }}>共 {recordings.length} 条</Text>
                 </View>
-              )}
-            </View>
+                <View className="gap-3">
+                  {recordings.map(item => (
+                    <RecordingCard
+                      key={item.id}
+                      item={item}
+                      playing={playingId === item.id}
+                      onPlay={() => playRecording(item)}
+                      onShare={() => shareRecording(item)}
+                      onMore={() => showMoreActions(item)}
+                    />
+                  ))}
+                </View>
+              </>
+            )}
           </ScrollView>
 
           {/* ================================= */}
@@ -704,29 +646,21 @@ export default function RecordingPage() {
             {/* 主录音按钮 */}
             <View pointerEvents="box-none" className="h-24 w-full items-center justify-center">
               <GlassPressable
-                onPress={handleMasterButton}
-                accessibilityLabel={isRecording ? '停止录音并保存' : sheetVisible ? '继续录音' : '开始录音'}
+                onPress={startRecording}
+                disabled={recordingInProgress}
+                accessibilityLabel="开始录音"
                 surfaceClassName="h-20 w-20 items-center justify-center"
                 surfaceStyle={{ borderRadius: 40 }}
               >
                 <Ionicons
-                  name={isRecording ? 'stop' : 'mic'}
+                  name="mic"
                   size={34}
                   color="#171717"
+                  accessible={false}
                 />
               </GlassPressable>
             </View>
 
-            {/* 录音状态提示 */}
-            {/*{(isRecording || sheetVisible) && (
-              <View pointerEvents="none" className="flex-row flex-wrap items-center justify-center gap-1.5">
-                <Ionicons
-                  name="information-circle-outline"
-                  size={15}
-                  color="#616161"
-                />
-              </View>
-            )}*/}
           </View>
         </View>
 
@@ -737,9 +671,9 @@ export default function RecordingPage() {
         <RecordingSheet
           visible={sheetVisible}
           isRecording={isRecording}
+          isStopping={recordingPhase === 'stopping'}
           seconds={seconds}
-          waveHeights={waveHeights}
-          onClose={() => setSheetVisible(false)}
+          waveHeights={animateWaveform ? waveHeights : REST_WAVE}
           onStop={stopRecording}
         />
 

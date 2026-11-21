@@ -5,10 +5,13 @@ import { useGlassAccessibility } from '@/components/ui/liquid-glass';
 
 type BottomSlideModalProps = PropsWithChildren<{
   visible?: boolean;
-  onClose: () => void;
+  onClose?: () => void;
+  navigationBarTranslucent?: boolean;
 }>;
 
-export function BottomSlideModal({ visible = true, onClose, children }: BottomSlideModalProps) {
+const keepModalOpen = () => {};
+
+export function BottomSlideModal({ visible = true, onClose = keepModalOpen, navigationBarTranslucent, children }: BottomSlideModalProps) {
   const { reduceMotion } = useGlassAccessibility();
 
   return (
@@ -17,6 +20,7 @@ export function BottomSlideModal({ visible = true, onClose, children }: BottomSl
       transparent
       animationType={reduceMotion ? 'none' : 'slide'}
       statusBarTranslucent
+      navigationBarTranslucent={navigationBarTranslucent}
       onRequestClose={onClose}
     >
       {children}
