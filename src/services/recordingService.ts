@@ -1,5 +1,18 @@
-import type { RecordingSessionsResponse } from '@/types/recording';
-import { get } from '@/utils';
+import type {
+  CreateRecordingSessionRequest,
+  RecordingSession,
+  RecordingSessionDetail,
+  RecordingSessionsResponse,
+} from '@/types/recording';
+import { get, post } from '@/utils';
+
+export function getRecordingSessionDetail(sessionId: number | string): Promise<RecordingSessionDetail> {
+  return get<RecordingSessionDetail>(`/api/recording-sessions/${encodeURIComponent(String(sessionId))}`);
+}
+
+export function createRecordingSession(payload: CreateRecordingSessionRequest): Promise<RecordingSession> {
+  return post<RecordingSession>('/api/recording-sessions', payload);
+}
 
 export function getRecordingSessions(
   page: number = 1,

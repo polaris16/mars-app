@@ -1,13 +1,13 @@
+import { ContentPressable, ContentSurface } from '@/components/content-surface';
+import { GlassScreen } from '@/components/glass-surface';
+import { DEFAULT_AVATAR_SOURCE } from '@/constants/avatar';
 import { Typography } from '@/constants/typography';
+import { useTheme } from '@/hooks/use-theme';
+import { useAuth } from '@/store/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { GlassScreen } from '@/components/glass-surface';
-import { ContentPressable, ContentSurface } from '@/components/content-surface';
-import { useAuth } from '@/store/AuthContext';
-import { DEFAULT_AVATAR_SOURCE } from '@/constants/avatar';
-import { useTheme } from '@/hooks/use-theme';
 
 export default function ProfileScreen() {
   const { user } = useAuth();
@@ -33,6 +33,11 @@ export default function ProfileScreen() {
         <ContentPressable accessibilityLabel="权益" onPress={() => router.navigate('/benefits')} style={styles.nextRow} surfaceStyle={styles.row}>
           <View style={[styles.icon, { backgroundColor: accentBlueSubtle }]}><Ionicons name="gift-outline" size={22} color={accentBlue} /></View>
           <View style={styles.rowContent}><Text dynamicTypeRamp="headline" style={styles.rowTitle}>权益</Text><Text dynamicTypeRamp="subheadline" style={styles.description}>查看专属服务与权益</Text></View>
+          <Ionicons name="chevron-forward" size={17} color="#616161" />
+        </ContentPressable>
+        <ContentPressable accessibilityLabel="我的录音" onPress={() => router.push('/recorder/list')} surfaceStyle={styles.row} style={styles.nextRow}>
+          <View style={[styles.icon, { backgroundColor: accentBlueSubtle }]}><Ionicons name="mic-outline" size={22} color={accentBlue} /></View>
+          <View style={styles.rowContent}><Text dynamicTypeRamp="headline" style={styles.rowTitle}>我的录音</Text><Text dynamicTypeRamp="subheadline" style={styles.description}>查看和管理已完成的录音</Text></View>
           <Ionicons name="chevron-forward" size={17} color="#616161" />
         </ContentPressable>
         {__DEV__ && <>

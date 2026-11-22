@@ -1,32 +1,34 @@
-import { Typography } from '@/constants/typography';
-import { SCREEN_BACKGROUND } from '@/constants/colors';
 import { BottomSheet, BottomSheetScrollView } from '@/components/bottom-sheet';
 import { GlassBackToolbar } from '@/components/glass-back-toolbar';
 import { GlassPressable, GlassToolbar } from '@/components/glass-surface';
 import { RecordingEmptyState } from '@/components/recording-empty-state';
 import { useGlassAccessibility } from '@/components/ui/liquid-glass';
+import { SCREEN_BACKGROUND } from '@/constants/colors';
+import { Typography } from '@/constants/typography';
 import { useTheme } from '@/hooks/use-theme';
+import { getRecordingSessionDetail } from '@/services/recordingService';
 
+import type { RecordingSessionDetail } from '@/types/recording';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, usePreventRemove, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import {
-    Alert,
-    Pressable,
-    ScrollView,
-    StatusBar,
-    Text,
-    View
+  Alert,
+  Pressable,
+  ScrollView,
+  StatusBar,
+  Text,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
-    AudioModule,
-    createAudioPlayer,
-    RecordingPresets,
-    setAudioModeAsync,
-    useAudioRecorder,
-    useAudioRecorderState,
+  AudioModule,
+  createAudioPlayer,
+  RecordingPresets,
+  setAudioModeAsync,
+  useAudioRecorder,
+  useAudioRecorderState,
 } from 'expo-audio';
 
 import * as Sharing from 'expo-sharing';
@@ -41,6 +43,10 @@ interface RecordingItem {
   uri: string;
   waveform: number[];
 }
+
+type SessionLoadState =
+  | { sessionId: string; status: 'loading' | 'loaded' }
+  | { sessionId: string; status: 'error'; message: string };
 
 const REST_WAVE = [
   8, 12, 8, 16, 8, 14, 20, 10, 16, 24,
@@ -70,6 +76,31 @@ const getCurrentTime = () => {
     now.getMinutes()
   ).padStart(2, '0')}`;
 };
+
+const formatRecordedAt = (value: string | null) => {
+  if (!value) return '录音时间未知';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return `今天 ${date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}`;
+};
+
+function mapSessionToRecordings(session: RecordingSessionDetail): RecordingItem[] {
+  const fragments = Array.isArray(session.fragments) ? session.fragments : [];
+  return fragments.map(fragment => {
+    const asset = fragment.source_asset;
+    const durationMillis = asset?.duration_ms ?? 0;
+    return {
+      id: String(fragment.id),
+      title: asset?.filename || session.title || session.topic_title || '录音',
+      time: formatRecordedAt(fragment.recorded_at ?? asset?.created_at ?? null),
+      duration: formatDuration(durationMillis),
+      durationMillis,
+      quality: asset?.sample_rate_hz ? `${(asset.sample_rate_hz / 1000).toFixed(1)} kHz` : '音频',
+      uri: asset?.download_url ?? '',
+      waveform: CARD_WAVE,
+    };
+  });
+}
 
 // =====================================================
 // 波形组件
@@ -305,10 +336,13 @@ export default function RecordingPage() {
 
   const params = useLocalSearchParams<{
     topic?: string;
+    recordingId?: string | string[];
   }>();
 
   const topic =
     typeof params.topic === 'string' ? params.topic : '语音记录';
+  const recordingIdParam = Array.isArray(params.recordingId) ? params.recordingId[0] : params.recordingId;
+  const recordingId = recordingIdParam?.trim();
 
   // Expo Audio 录音器
   const recorder = useAudioRecorder({
@@ -326,6 +360,11 @@ export default function RecordingPage() {
   // 页面状态
   const [recordingPhase, setRecordingPhase] = useState<'idle' | 'starting' | 'active' | 'stopping'>('idle');
   const [recordings, setRecordings] = useState<RecordingItem[]>([]);
+  const [sessionLoadState, setSessionLoadState] = useState<SessionLoadState | null>(null);
+  const [sessionRetry, setSessionRetry] = useState(0);
+  const currentSessionLoadState = sessionLoadState?.sessionId === recordingId ? sessionLoadState : null;
+  const sessionLoading = Boolean(recordingId && (!currentSessionLoadState || currentSessionLoadState.status === 'loading'));
+  const sessionLoadError = currentSessionLoadState?.status === 'error' ? currentSessionLoadState.message : null;
   const [waveHeights, setWaveHeights] = useState(REST_WAVE);
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [recordingControlsHeight, setRecordingControlsHeight] = useState(160);
@@ -361,6 +400,33 @@ export default function RecordingPage() {
       playerRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    if (!recordingId) return;
+    let active = true;
+    getRecordingSessionDetail(recordingId)
+      .then(session => {
+        if (!active) return;
+        if (!Array.isArray(session.fragments)) {
+          throw new Error('录音详情未返回片段数据。');
+        }
+        const sessionRecordings = mapSessionToRecordings(session);
+        setRecordings(sessionRecordings);
+        setSessionLoadState({ sessionId: recordingId, status: 'loaded' });
+      })
+      .catch(error => {
+        if (!active) return;
+        console.error('获取录音会话详情失败：', error);
+        setSessionLoadState({
+          sessionId: recordingId,
+          status: 'error',
+          message: error instanceof Error ? error.message : '无法加载录音详情，请稍后重试。',
+        });
+      });
+    return () => {
+      active = false;
+    };
+  }, [recordingId, sessionRetry]);
 
   // 开始录音
   const startRecording = async () => {
@@ -610,7 +676,27 @@ export default function RecordingPage() {
             }}
           >
             {recordings.length === 0 ? (
+              sessionLoading ? (
+                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 32 }}>
+                  <Text dynamicTypeRamp="body" style={{ ...Typography.body, color: '#616161' }}>正在加载录音记录…</Text>
+                </View>
+              ) : sessionLoadError ? (
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => {
+                    if (!recordingId) return;
+                    setSessionLoadState({ sessionId: recordingId, status: 'loading' });
+                    setSessionRetry(value => value + 1);
+                  }}
+                  style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 32 }}
+                >
+                  <Text dynamicTypeRamp="body" style={{ ...Typography.body, textAlign: 'center', color: '#B42318' }}>
+                    {sessionLoadError} 点击重试
+                  </Text>
+                </Pressable>
+              ) : (
               <RecordingEmptyState icon="mic-outline" description="点按下方麦克风开始录音" />
+              )
             ) : (
               <>
                 <View className="mb-4 min-h-8 flex-row items-center justify-between px-1">

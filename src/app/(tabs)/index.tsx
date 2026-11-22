@@ -3,13 +3,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Pressable, RefreshControl, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GlassPressable, GlassScreen } from '@/components/glass-surface';
 import { ContentPressable, ContentSurface } from '@/components/content-surface';
 import { useTheme } from '@/hooks/use-theme';
 
 import { getRecommendedTopics } from '@/services/topicService';
+import { createRecordingSession } from '@/services/recordingService';
 import type { TopicItem } from '@/types/topic';
 
 export type { TopicItem };
@@ -61,7 +62,23 @@ export default function HomeScreen() {
   const { accentBlue, accentBlueMuted } = useTheme();
   const { fontScale } = useWindowDimensions();
   const largeText = fontScale >= 1.5;
-  const openRecorder = (topic: string) => router.push({ pathname: '/recorder', params: { topic } });
+  const openRecorder = async (topic: string, topicId?: number) => {
+    if (!topicId) {
+      router.push({ pathname: '/recorder', params: { topic } });
+      return;
+    }
+
+    try {
+      const session = await createRecordingSession({
+        topic_id: topicId,
+        title: '未命名',
+        visibility: 'public',
+      });
+      router.push({ pathname: '/recorder', params: { topic, recordingId: String(session.id) } });
+    } catch (error) {
+      Alert.alert('无法开始录音', error instanceof Error ? error.message : '创建录音会话失败，请稍后重试。');
+    }
+  };
   const [topics, setTopics] = useState<TopicItem[]>([]);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
@@ -240,7 +257,7 @@ export default function HomeScreen() {
   const renderItem = ({ item, index }: { item: TopicItem; index: number }) => (
     <ContentPressable
       accessibilityLabel={`选择话题：${item.title}`}
-      onPress={() => openRecorder(item.title)}
+      onPress={() => void openRecorder(item.title, item.id)}
       surfaceStyle={[styles.topic, largeText && { flexDirection: 'column', alignItems: 'stretch' }]}
     >
       <View accessible={false} style={[styles.topicIcon, { width: 44 * Math.max(1, fontScale), minHeight: 48 * Math.max(1, fontScale) }]}><Text dynamicTypeRamp="title2" style={styles.topicSymbol}>{getTopicIcon(item, index)}</Text></View>

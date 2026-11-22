@@ -1,8 +1,10 @@
-import { Typography } from '@/constants/typography';
 import { ContentSurface } from '@/components/content-surface';
 import { GlassBackToolbar } from '@/components/glass-back-toolbar';
 import { RecordingEmptyState } from '@/components/recording-empty-state';
 import { SCREEN_BACKGROUND } from '@/constants/colors';
+import { Typography } from '@/constants/typography';
+import { getRecordingSessions } from '@/services/recordingService';
+import type { RecordingSession } from '@/types/recording';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
@@ -15,8 +17,6 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getRecordingSessions } from '@/services/recordingService';
-import type { RecordingSession } from '@/types/recording';
 
 const PAGE_SIZE = 10;
 
@@ -141,14 +141,14 @@ export default function RecordingListPage() {
             key={recording.id}
             accessibilityRole="button"
             accessibilityLabel={`打开录音：${recording.title}`}
-            onPress={() => router.push({ pathname: '/recorder', params: { topic: recording.topic_title, recordingId: String(recording.id) } })}
+            onPress={() => router.push({ pathname: '/recorder', params: { topic: recording.topic_title ?? recording.title, recordingId: String(recording.id) } })}
             style={{ marginBottom: 12 }}
           >
             <ContentSurface style={{ padding: 20, borderRadius: 24 }}>
             <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
               <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
-                  <Text dynamicTypeRamp="headline" style={{ ...Typography.headline, flexShrink: 1, color: '#0A0A0A' }}>{recording.title || recording.topic_title}</Text>
+                  <Text dynamicTypeRamp="headline" style={{ ...Typography.headline, flexShrink: 1, color: '#0A0A0A' }}>{recording.title + " . " + recording.topic_title}</Text>
                   <View style={{ borderRadius: 4, backgroundColor: '#EFEDED', paddingHorizontal: 6, paddingVertical: 3 }}><Text dynamicTypeRamp="caption1" style={{ ...Typography.caption1, color: '#616161' }}>{recording.fragment_count} 段</Text></View>
                 </View>
                 <Text dynamicTypeRamp="footnote" style={{ ...Typography.footnote, marginTop: 6, color: '#616161' }}>{formatRecordingDate(recording.last_recorded_at ?? recording.created_at)} · {formatRecordingDuration(recording.duration_ms)}</Text>
