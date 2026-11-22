@@ -6,12 +6,12 @@ import { useGlassAccessibility } from '@/components/ui/liquid-glass';
 import { SCREEN_BACKGROUND } from '@/constants/colors';
 import { Typography } from '@/constants/typography';
 import { useTheme } from '@/hooks/use-theme';
-import { getRecordingSessionDetail } from '@/services/recordingService';
+import { getRecordingSessionDetail, uploadRecordingToSession } from '@/services/recordingService';
 
 import type { RecordingSessionDetail } from '@/types/recording';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, usePreventRemove, useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Pressable,
@@ -57,6 +57,9 @@ const CARD_WAVE = [
   8, 12, 20, 8, 16, 24, 12, 20, 8,
   16, 20, 12, 24, 16, 8, 16, 12,
 ];
+
+const MAX_RECORDING_DURATION_MS = 10 * 60 * 1000;
+const RECORDING_SAMPLE_RATE_HZ = 44_100;
 
 const formatTime = (seconds: number) => {
   const minutes = Math.floor(seconds / 60);
@@ -320,7 +323,7 @@ function RecordingSheet({
       >
         <View className="h-3.5 w-3.5 shrink-0 rounded-sm bg-white" />
         <Text dynamicTypeRamp="headline" style={Typography.headline} className="shrink text-center text-white">
-          {isStopping ? '正在保存…' : '停止并保存'}
+          {isStopping ? '正在上传并保存…' : '停止并保存'}
         </Text>
       </Pressable>
     </BottomSheet>
@@ -343,6 +346,7 @@ export default function RecordingPage() {
     typeof params.topic === 'string' ? params.topic : '语音记录';
   const recordingIdParam = Array.isArray(params.recordingId) ? params.recordingId[0] : params.recordingId;
   const recordingId = recordingIdParam?.trim();
+  const recordingSessionId = recordingId && /^\d+$/.test(recordingId) ? Number(recordingId) : null;
 
   // Expo Audio 录音器
   const recorder = useAudioRecorder({
@@ -374,6 +378,7 @@ export default function RecordingPage() {
   const animateWaveform = isRecording && sheetVisible && !reduceMotion;
 
   const playerRef = useRef<ReturnType<typeof createAudioPlayer> | null>(null);
+  const stopInProgressRef = useRef(false);
 
   usePreventRemove(recordingInProgress);
 
@@ -478,9 +483,53 @@ export default function RecordingPage() {
     }
   };
 
+  const retryRecordingUpload = useCallback(async (item: RecordingItem) => {
+    if (!recordingSessionId) return;
+    try {
+      const fragment = await uploadRecordingToSession({
+        sessionId: recordingSessionId,
+        fileUri: item.uri,
+        durationMs: item.durationMillis,
+        sampleRateHz: RECORDING_SAMPLE_RATE_HZ,
+      });
+      setRecordings(previous => previous.map(recording => recording.id === item.id
+        ? { ...item, id: String(fragment.id) }
+        : recording));
+    } catch (error) {
+      Alert.alert('上传失败', error instanceof Error ? error.message : '请稍后重试。');
+    }
+  }, [recordingSessionId]);
+
+  const uploadRecording = useCallback(async (item: RecordingItem) => {
+    if (!recordingSessionId) {
+      Alert.alert('录音未关联会话', '录音已保存在本机。请从具体话题进入录音页后，才能上传到服务器。');
+      return;
+    }
+
+    try {
+      const fragment = await uploadRecordingToSession({
+        sessionId: recordingSessionId,
+        fileUri: item.uri,
+        durationMs: item.durationMillis,
+        sampleRateHz: RECORDING_SAMPLE_RATE_HZ,
+        recordedAt: new Date().toISOString(),
+      });
+      setRecordings(previous => previous.map(recording => recording.id === item.id
+        ? { ...item, id: String(fragment.id) }
+        : recording));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '上传录音失败，请稍后重试。';
+      Alert.alert('上传失败', `录音已保存在本机。${message}`, [
+        { text: '稍后重试', style: 'cancel' },
+        { text: '立即重试', onPress: () => void retryRecordingUpload(item) },
+      ]);
+    }
+  }, [recordingSessionId, retryRecordingUpload]);
+
   // 停止并保存
-  const stopRecording = async () => {
-    if (recordingPhase !== 'active') return;
+  const stopRecording = useCallback(async () => {
+    if (recordingPhase !== 'active' || stopInProgressRef.current) return;
+    stopInProgressRef.current = true;
     setRecordingPhase('stopping');
     try {
       const durationMillis = recorderState.durationMillis || 0;
@@ -505,16 +554,27 @@ export default function RecordingPage() {
           newRecording,
           ...previous,
         ]);
+        await uploadRecording(newRecording);
       }
 
       setRecordingPhase('idle');
       setWaveHeights(REST_WAVE);
+      stopInProgressRef.current = false;
     } catch (error) {
-      setRecordingPhase('active');
+      setRecordingPhase(recorder.uri ? 'idle' : 'active');
+      stopInProgressRef.current = false;
       console.error('保存录音失败：', error);
-      Alert.alert('保存失败', '音频文件未能成功保存。');
+      Alert.alert('保存失败', error instanceof Error ? error.message : '音频文件未能成功保存。');
     }
-  };
+  }, [recordingPhase, recorder, recorderState.durationMillis, topic, uploadRecording]);
+
+  useEffect(() => {
+    if (recordingPhase === 'active' && recorderState.durationMillis >= MAX_RECORDING_DURATION_MS) {
+      const timeout = setTimeout(() => void stopRecording(), 0);
+      return () => clearTimeout(timeout);
+    }
+    return undefined;
+  }, [recordingPhase, recorderState.durationMillis, stopRecording]);
 
   // 播放与暂停
   const playRecording = (item: RecordingItem) => {

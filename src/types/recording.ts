@@ -58,6 +58,36 @@ export interface CreateRecordingSessionRequest {
   visibility: string;
 }
 
+export interface RecordingUploadAuthorizationRequest {
+  purpose: 'recording';
+  media_type: 'audio';
+  filename: string;
+  content_type: string;
+  size_bytes: number;
+  sha256: string;
+  session_id: number;
+}
+
+export interface RecordingUploadAuthorizationResponse {
+  reused: boolean;
+  asset_id: number;
+  upload_method: 'PUT';
+  upload_url: string | null;
+  required_headers: Record<string, string>;
+  expires_at: string | null;
+}
+
+export interface CompleteRecordingAssetRequest {
+  duration_ms: number;
+  sample_rate_hz: number;
+}
+
+export interface CreateRecordingFragmentRequest {
+  source_type: 'audio';
+  source_asset_id: number;
+  recorded_at: string;
+}
+
 export interface RecordingSessionsResponse {
   page: number;
   page_size: number;
