@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { PropsWithChildren } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View, type ScrollViewProps } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View, type ScrollViewProps, type StyleProp, type ViewStyle } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomSlideModal } from '@/components/bottom-slide-modal';
@@ -19,6 +19,7 @@ type BottomSheetProps = PropsWithChildren<{
   dismissOnBackdropPress?: boolean;
   avoidKeyboard?: boolean;
   expanded?: boolean;
+  sheetStyle?: StyleProp<ViewStyle>;
 }>;
 
 export function BottomSheet({
@@ -30,6 +31,7 @@ export function BottomSheet({
   dismissOnBackdropPress = false,
   avoidKeyboard = false,
   expanded = false,
+  sheetStyle,
   children,
 }: BottomSheetProps) {
   return (
@@ -45,7 +47,11 @@ export function BottomSheet({
             behavior="padding"
             style={styles.dock}
           >
-            <ContentSurface accessibilityViewIsModal onAccessibilityEscape={onClose} style={[styles.sheet, expanded && styles.expanded]}>
+            <ContentSurface
+              accessibilityViewIsModal
+              onAccessibilityEscape={onClose}
+              style={[styles.sheet, expanded && styles.expanded, sheetStyle]}
+            >
               <SafeAreaView edges={['bottom']} style={styles.content}>
                 {(title || onClose) && (
                   <View style={[styles.header, !title && styles.headerWithoutTitle]}>

@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { type ComponentRef, useEffect, useMemo, useRef, useState } from 'react';
+import { type ComponentRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Keyboard, Pressable, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -11,8 +11,8 @@ import { GlassPressable, GlassScreen } from '@/components/glass-surface';
 import { SCREEN_BACKGROUND } from '@/constants/colors';
 import { Typography } from '@/constants/typography';
 import { useTheme } from '@/hooks/use-theme';
-import { createContactId, getContactLabel, organizeContacts, type Contact, type ContactDirectory } from '@/services/contacts';
-import { loadContactDirectory, saveContactDirectory } from '@/services/contacts-storage';
+import { getContactLabel, organizeContacts, type Contact, type ContactDirectory, type ContactRequestItem } from '@/services/contacts';
+import { fetchContacts, fetchIncomingRequests, resolveContactRequest, searchContacts, sendContactRequest, type ContactRequest, type ContactSearchResult } from '@/services/contacts-api';
 import { useAuth } from '@/store/AuthContext';
 
 type DirectoryRow =
@@ -54,28 +54,45 @@ function ContactDirectoryScreen({ accountId }: { accountId: string }) {
   const { fontScale } = useWindowDimensions();
   const { accentBlue, accentBlueSubtle } = useTheme();
   const [directory, setDirectory] = useState<ContactDirectory | null>(null);
+  const [requests, setRequests] = useState<ContactRequestItem[]>([]);
   const [query, setQuery] = useState('');
   const [showDictationHint, setShowDictationHint] = useState(false);
   const [sheet, setSheet] = useState<{ panel: ContactsPanel; visible: boolean } | null>(null);
   const [error, setError] = useState(false);
   const [saveError, setSaveError] = useState('');
   const [loadAttempt, setLoadAttempt] = useState(0);
+  const [busy, setBusy] = useState(false);
   const directoryRef = useRef<ContactDirectory | null>(null);
   const searchRef = useRef<ComponentRef<typeof TextInput>>(null);
   const listRef = useRef<FlatList<DirectoryRow>>(null);
   const searching = query.trim().length > 0;
 
+  const loadDirectory = useCallback(async () => {
+    const [apiContacts, apiRequests] = await Promise.all([fetchContacts(), fetchIncomingRequests()]);
+    const contacts: Contact[] = apiContacts.map(item => ({
+      id: String(item.id),
+      name: item.contact_user.display_name || `用户 ${item.contact_user.id}`,
+      note: '',
+      tag: item.relationship_label || '好友',
+      ...(item.contact_user.avatar_url ? { avatarUrl: item.contact_user.avatar_url } : {}),
+    }));
+    const mappedRequests = apiRequests.map(mapRequest);
+    return { directory: { version: 1 as const, contacts, requests: mappedRequests }, requests: mappedRequests };
+  }, []);
+
   useEffect(() => {
     let active = true;
-    void loadContactDirectory(accountId).then(loaded => {
+    void loadDirectory().then(loaded => {
       if (!active) return;
-      directoryRef.current = loaded;
-      setDirectory(loaded);
+      directoryRef.current = loaded.directory;
+      setDirectory(loaded.directory);
+      setRequests(loaded.requests);
+      setError(false);
     }).catch(() => {
       if (active) setError(true);
     });
     return () => { active = false; };
-  }, [accountId, loadAttempt]);
+  }, [loadDirectory, accountId, loadAttempt]);
 
   const list = useMemo(() => (
     directory ? buildRows(organizeContacts(directory, query), searching) : null
@@ -114,38 +131,44 @@ function ContactDirectoryScreen({ accountId }: { accountId: string }) {
     if (!current) return false;
 
     const next = update(current);
-    try {
-      saveContactDirectory(accountId, next);
-    } catch {
-      setSaveError('保存失败，请重试。');
-      return false;
-    }
     directoryRef.current = next;
     setDirectory(next);
     setSaveError('');
     return true;
   };
 
-  const addContact = (phone: string, note: string) => {
-    const contact: Contact = { id: createContactId(), phone, note };
-    if (updateDirectory(current => ({ ...current, contacts: [...current.contacts, contact] }))) {
-      openPanel({ kind: 'contact', id: contact.id });
+  const searchUsers = async (phone: string) => {
+    setSaveError('');
+    return searchContacts(phone);
+  };
+
+  const addContact = async (target: ContactSearchResult, message: string) => {
+    setBusy(true);
+    setSaveError('');
+    try {
+      await sendContactRequest(target.id, message);
+      setSaveError('好友申请已发送。');
+    } catch (cause) {
+      setSaveError(cause instanceof Error ? cause.message : '发送好友申请失败。');
+    } finally {
+      setBusy(false);
     }
   };
 
-  const acceptContact = (contact: Contact) => {
-    updateDirectory(current => ({
-      ...current,
-      contacts: current.contacts.some(item => item.id === contact.id) ? current.contacts : [...current.contacts, contact],
-      requests: current.requests.filter(item => item.id !== contact.id),
-    }));
-  };
-
-  const toggleStar = (contact: Contact) => {
-    updateDirectory(current => ({
-      ...current,
-      contacts: current.contacts.map(item => item.id === contact.id ? { ...item, starred: !item.starred } : item),
-    }));
+  const resolveRequest = async (request: ContactRequestItem, action: 'accept' | 'reject') => {
+    setBusy(true);
+    setSaveError('');
+    try {
+      await resolveContactRequest(request.requestId, action);
+      const loaded = await loadDirectory();
+      directoryRef.current = loaded.directory;
+      setDirectory(loaded.directory);
+      setRequests(loaded.requests);
+    } catch (cause) {
+      setSaveError(cause instanceof Error ? cause.message : '处理好友申请失败。');
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -190,7 +213,7 @@ function ContactDirectoryScreen({ accountId }: { accountId: string }) {
           </View>
 
           {directory && !searching && (
-            <ContentPressable style={styles.requestsOuter} surfaceStyle={styles.requests} accessibilityLabel={`新的朋友，${directory.requests.length} 条好友申请`} onPress={() => {}}>
+            <ContentPressable style={styles.requestsOuter} surfaceStyle={styles.requests} accessibilityLabel={`新的朋友，${requests.length} 条好友申请`} onPress={() => openPanel({ kind: 'requests' })}>
               <View style={[styles.requestIcon, { backgroundColor: accentBlueSubtle }]}>
                 <Ionicons name="person-add-outline" size={22} color={accentBlue} accessible={false} />
               </View>
@@ -198,8 +221,8 @@ function ContactDirectoryScreen({ accountId }: { accountId: string }) {
                 <Text dynamicTypeRamp="headline" style={styles.name}>新的朋友</Text>
                 <Text dynamicTypeRamp="subheadline" style={styles.note}>查看好友申请</Text>
               </View>
-              {directory.requests.length > 0 && (
-                <View style={styles.badge}><Text dynamicTypeRamp="caption1" style={styles.badgeLabel}>{directory.requests.length}</Text></View>
+              {requests.length > 0 && (
+                <View style={styles.badge}><Text dynamicTypeRamp="caption1" style={styles.badgeLabel}>{requests.length}</Text></View>
               )}
               <Ionicons name="chevron-forward" size={17} color="#616161" accessible={false} />
             </ContentPressable>
@@ -220,7 +243,7 @@ function ContactDirectoryScreen({ accountId }: { accountId: string }) {
                   <Text accessibilityRole="header" dynamicTypeRamp="footnote" style={styles.sectionLabel}>{item.title}</Text>
                 </View>
               ) : (
-                <DirectoryEntry row={item} height={entryHeight} onPress={() => {}} />
+                <DirectoryEntry row={item} height={entryHeight} onPress={() => openPanel({ kind: 'requests' })} />
               )}
               ListEmptyComponent={(
                 <ContentSurface style={styles.empty}>
@@ -260,9 +283,11 @@ function ContactDirectoryScreen({ accountId }: { accountId: string }) {
             panel={sheet.panel}
             directory={directory}
             onClose={closePanel}
-            onAdd={addContact}
-            onAccept={acceptContact}
-            onStar={toggleStar}
+            onSearch={searchUsers}
+            onSendRequest={addContact}
+            onResolveRequest={resolveRequest}
+            requests={requests}
+            busy={busy}
             saveError={saveError}
           />
         )}
@@ -273,7 +298,7 @@ function ContactDirectoryScreen({ accountId }: { accountId: string }) {
 
 function DirectoryEntry({ row, height, onPress }: { row: Extract<DirectoryRow, { kind: 'entry' }>; height: number; onPress: () => void }) {
   const { accentBlue, accentBlueSubtle } = useTheme();
-  const { name, note } = row.contact;
+  const { name, note, tag } = row.contact;
   const label = getContactLabel(row.contact);
   const avatar = name ? Array.from(name.trim())[0]?.toUpperCase() : undefined;
   return (
@@ -290,11 +315,22 @@ function DirectoryEntry({ row, height, onPress }: { row: Extract<DirectoryRow, {
       </View>
       <View style={styles.rowText}>
         <Text numberOfLines={1} dynamicTypeRamp="headline" style={styles.name}>{label}</Text>
-        {note ? <Text numberOfLines={1} dynamicTypeRamp="subheadline" style={styles.note}>{note}</Text> : null}
+        <Text numberOfLines={1} dynamicTypeRamp="subheadline" style={styles.note}>{note || tag || '好友'}</Text>
       </View>
       <Ionicons name="chevron-forward" size={16} color="#616161" accessible={false} />
     </Pressable>
   );
+}
+
+function mapRequest(request: ContactRequest): ContactRequestItem {
+  const contactUser = request.contact_user;
+  return {
+    id: String(request.request_id),
+    requestId: request.request_id,
+    name: contactUser.display_name || `用户 ${contactUser.id}`,
+    note: request.message || '',
+    ...(contactUser.avatar_url ? { avatarUrl: contactUser.avatar_url } : {}),
+  };
 }
 
 const styles = StyleSheet.create({

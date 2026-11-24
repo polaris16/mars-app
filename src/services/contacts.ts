@@ -4,6 +4,7 @@ export type Contact = {
   id: string;
   note: string;
   starred?: boolean;
+  tag?: string;
 } & ({ name: string; phone?: string } | { name?: never; phone: string });
 
 export type ContactDirectory = {
@@ -11,6 +12,8 @@ export type ContactDirectory = {
   contacts: Contact[];
   requests: Contact[];
 };
+
+export type ContactRequestItem = Contact & { requestId: number };
 
 const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ#';
 
