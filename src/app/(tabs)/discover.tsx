@@ -4,6 +4,7 @@ import { SCREEN_BACKGROUND } from '@/constants/colors';
 import { Typography } from '@/constants/typography';
 
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -18,7 +19,7 @@ export default function DiscoverScreen() {
           <Text accessibilityRole="header" dynamicTypeRamp="largeTitle" style={styles.title}>发现</Text>
           <Text dynamicTypeRamp="subheadline" style={styles.subtitle}>探索更多有趣玩法</Text>
 
-          <ContentPressable accessibilityLabel="打扮，虚拟换装入口" surfaceStyle={styles.card}>
+          <ContentPressable accessibilityLabel="打扮，虚拟换装入口" onPress={() => router.push('/try-on')} surfaceStyle={styles.card}>
             <View style={styles.cardHeader}>
               <View style={styles.iconBadge}>
                 <Ionicons name="shirt-outline" size={23} color="#171717" accessible={false} />

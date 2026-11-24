@@ -16,8 +16,17 @@ export default function ProfileScreen() {
   return <GlassScreen>
     <SafeAreaView style={styles.fill} edges={['top', 'left', 'right']}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.content, { paddingBottom: 110 + insets.bottom }]}>
-        <Text accessibilityRole="header" dynamicTypeRamp="largeTitle" style={styles.title}>我的</Text>
-        <Text dynamicTypeRamp="subheadline" style={styles.subtitle}>收藏声音，也收藏生活</Text>
+        <View style={styles.titleRow}>
+          <Text accessibilityRole="header" dynamicTypeRamp="largeTitle" style={styles.title}>我的</Text>
+          <ContentPressable
+            accessibilityLabel="设置"
+            onPress={() => router.push('/settings')}
+            surfaceStyle={styles.settingsButton}
+          >
+            <Ionicons name="settings-outline" size={21} color="#171717" accessible={false} />
+          </ContentPressable>
+        </View>
+        <Text dynamicTypeRamp="subheadline" style={styles.subtitle}>管理你的个人资料</Text>
         <ContentSurface style={styles.profile}>
           <View style={[styles.avatar, { backgroundColor: accentBlueSubtle }]}>
             <Image source={user?.avatar ? { uri: user.avatar } : DEFAULT_AVATAR_SOURCE} style={styles.avatarImage} />
@@ -57,6 +66,8 @@ const styles = StyleSheet.create({
   fill: { flex: 1 },
   content: { paddingHorizontal: 24, paddingTop: 16, maxWidth: 640, width: '100%', alignSelf: 'center' },
   title: { ...Typography.largeTitle, color: '#0A0A0A' },
+  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  settingsButton: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF' },
   subtitle: { ...Typography.subhead, marginTop: 6, marginBottom: 28, color: '#616161' },
   profile: { padding: 28, alignItems: 'center', marginBottom: 30, borderRadius: 28 },
   avatar: { width: 80, height: 80, borderRadius: 40, alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderWidth: 3, borderColor: '#FFFFFF' },

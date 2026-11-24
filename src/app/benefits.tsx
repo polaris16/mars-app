@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomSheet, BottomSheetForm } from '@/components/bottom-sheet';
 import { ContentSurface } from '@/components/content-surface';
+import { DarkButton } from '@/components/dark-button';
 import { GlassBackToolbar } from '@/components/glass-back-toolbar';
 import { GlassPressable, GlassScreen } from '@/components/glass-surface';
 import { Typography } from '@/constants/typography';
@@ -94,7 +95,7 @@ function BenefitsPage({ accountId }: { accountId: string }) {
 
             {notice ? <Text accessibilityLiveRegion="polite" dynamicTypeRamp="subheadline" style={styles.notice}>{notice}</Text> : null}
 
-            <PlanCard plan={selected} />
+            <PlanCard plan={selected} onUseBenefit={() => router.push('/companions')} />
           </ScrollView>
         </View>
       </SafeAreaView>
@@ -114,7 +115,7 @@ function BenefitsPage({ accountId }: { accountId: string }) {
   );
 }
 
-function PlanCard({ plan }: { plan: BenefitPlan }) {
+function PlanCard({ plan, onUseBenefit }: { plan: BenefitPlan; onUseBenefit: () => void }) {
   const { accentBlue, accentBlueSubtle } = useTheme();
   const usedCount = plan.benefits.filter(benefit => benefit.used).length;
   const year = new Date().getFullYear();
@@ -152,6 +153,7 @@ function PlanCard({ plan }: { plan: BenefitPlan }) {
                 label={benefit.used ? '已使用' : '去使用'}
                 accessibilityLabel={`${benefit.title}，${benefit.used ? '已使用' : '去使用'}`}
                 disabled={benefit.used}
+                onPress={onUseBenefit}
               />
             </View>
           </View>
@@ -178,20 +180,6 @@ function PlanCard({ plan }: { plan: BenefitPlan }) {
         ))}
       </View>
     </ContentSurface>
-  );
-}
-
-function DarkButton({ label, accessibilityLabel, disabled, onPress }: { label: string; accessibilityLabel?: string; disabled?: boolean; onPress?: () => void }) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel ?? label}
-      disabled={disabled}
-      onPress={onPress}
-      style={({ pressed }) => [styles.button, (pressed || disabled) && styles.pressed]}
-    >
-      <Text dynamicTypeRamp="subheadline" style={[styles.actionLabel, styles.inverse]}>{label}</Text>
-    </Pressable>
   );
 }
 
@@ -251,7 +239,6 @@ const styles = StyleSheet.create({
   itemFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 },
   validity: { ...Typography.footnote, color: '#616161', flexShrink: 1 },
   manager: { flexDirection: 'row', alignItems: 'center' },
-  button: { minHeight: 44, paddingHorizontal: 13, paddingVertical: 8, borderRadius: 22, backgroundColor: '#171717', alignItems: 'center', justifyContent: 'center' },
   input: { ...Typography.body, minHeight: 48, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 16, backgroundColor: '#F2F2F7', color: '#171717' },
   error: { ...Typography.subhead, color: '#B42318' },
 });
