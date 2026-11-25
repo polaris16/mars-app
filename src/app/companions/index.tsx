@@ -6,13 +6,13 @@ import { AccessibilityInfo, Keyboard, Platform, ScrollView, StyleSheet, Text, Te
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ContentPressable, ContentSurface } from '@/components/content-surface';
-import { DarkButton } from '@/components/dark-button';
 import { GlassBackToolbar } from '@/components/glass-back-toolbar';
 import { GlassPressable, GlassScreen } from '@/components/glass-surface';
 import { companions, type Companion } from '@/constants/companions';
 import { Typography } from '@/constants/typography';
 import { useInputHeight } from '@/hooks/use-input-height';
 import { useAuth } from '@/store/AuthContext';
+import { useCompanionSession } from '@/store/companion-session';
 
 const filters = ['全部', '今日可约', '高分推荐', '应用心理', '数码达人', '生活纪实'] as const;
 type Filter = typeof filters[number];
@@ -43,6 +43,7 @@ function searchableText(companion: Companion) {
 export default function CompanionsScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const { bookings } = useCompanionSession();
   const insets = useSafeAreaInsets();
   const { width, fontScale } = useWindowDimensions();
   const inputHeight = useInputHeight();
@@ -50,7 +51,6 @@ export default function CompanionsScreen() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [recommendedId, setRecommendedId] = useState<string | null>(null);
-  const [bookedIds, setBookedIds] = useState<string[]>([]);
   const [notice, setNotice] = useState('');
   const noticeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -77,7 +77,7 @@ export default function CompanionsScreen() {
     Keyboard.dismiss();
     const interests = (user?.interests ?? []).map(interest => interest.trim().toLowerCase()).filter(Boolean);
     const matches = visibleCompanions
-      .filter(companion => !bookedIds.includes(companion.id))
+      .filter(companion => !bookings[companion.id])
       .map(companion => ({ companion, overlap: interests.filter(interest => searchableText(companion).includes(interest)).length }))
       .sort((left, right) => right.overlap - left.overlap || right.companion.rating - left.companion.rating);
     const match = matches[0]?.companion;
@@ -85,11 +85,9 @@ export default function CompanionsScreen() {
     showNotice(match ? `演示推荐 · ${match.name}` : '当前筛选下暂无可推荐的伙伴');
   };
 
-  const bookCompanion = (companion: Companion) => {
-    if (bookedIds.includes(companion.id)) return;
+  const openCompanion = (id: string) => {
     Keyboard.dismiss();
-    setBookedIds(current => current.includes(companion.id) ? current : [...current, companion.id]);
-    showNotice(`已记录对「${companion.name}」的预约意向（演示）`);
+    router.push({ pathname: '/companions/[id]', params: { id } });
   };
 
   return (
@@ -166,8 +164,8 @@ export default function CompanionsScreen() {
                     key={companion.id}
                     companion={companion}
                     width={cardWidth}
-                    booked={bookedIds.includes(companion.id)}
-                    onBook={() => bookCompanion(companion)}
+                    booked={Boolean(bookings[companion.id])}
+                    onOpen={() => openCompanion(companion.id)}
                   />
                 ))}
               </View>
@@ -198,11 +196,19 @@ export default function CompanionsScreen() {
   );
 }
 
-function CompanionCard({ companion, width, booked, onBook }: { companion: Companion; width: number; booked: boolean; onBook: () => void }) {
+function CompanionCard({ companion, width, booked, onOpen }: { companion: Companion; width: number; booked: boolean; onOpen: () => void }) {
   const { name, portrait, role, description, skills, availability, rating, reviews } = companion;
+  const summary = [name, role, description, availability, ...skills, `评分 ${rating.toFixed(1)}，评价 ${reviews}`];
+  if (booked) summary.push('已记录预约意向');
 
   return (
-    <ContentSurface style={[styles.card, { width }]}>
+    <ContentPressable
+      accessibilityLabel={summary.join('，')}
+      accessibilityHint="打开伙伴详情"
+      onPress={onOpen}
+      style={{ width }}
+      surfaceStyle={styles.card}
+    >
       <View style={styles.portraitFrame}>
         <Image source={portrait} style={styles.portrait} contentFit="cover" accessible={false} />
         <View style={styles.availability}>
@@ -213,7 +219,7 @@ function CompanionCard({ companion, width, booked, onBook }: { companion: Compan
 
       <View style={styles.cardDetails}>
         <View style={styles.cardHeading}>
-          <Text accessibilityRole="header" dynamicTypeRamp="headline" style={styles.name}>{name}</Text>
+          <Text dynamicTypeRamp="headline" style={styles.name}>{name}</Text>
           <Text dynamicTypeRamp="caption1" style={styles.caption}>{role}</Text>
         </View>
         <Text dynamicTypeRamp="footnote" style={styles.secondary}>{description}</Text>
@@ -225,19 +231,17 @@ function CompanionCard({ companion, width, booked, onBook }: { companion: Compan
       </View>
 
       <View style={styles.cardFooter}>
-        <View style={styles.rating} accessible accessibilityLabel={`评分 ${rating.toFixed(1)}，${reviews}评价`}>
+        <View style={styles.rating}>
           <Ionicons name="star" size={14} color="#9A5B00" accessible={false} />
           <Text dynamicTypeRamp="footnote" style={styles.ratingLabel}>{rating.toFixed(1)}</Text>
           <Text dynamicTypeRamp="caption1" style={styles.caption}>({reviews})</Text>
         </View>
-        <DarkButton
-          label={booked ? '已记录' : '预约'}
-          accessibilityLabel={booked ? `已记录${name}的预约意向` : `预约${name}`}
-          disabled={booked}
-          onPress={onBook}
-        />
+        <View style={styles.cardIndicator}>
+          {booked && <Text dynamicTypeRamp="caption1" style={styles.caption}>已记录</Text>}
+          <Ionicons name="chevron-forward" size={16} color="#616161" accessible={false} />
+        </View>
       </View>
-    </ContentSurface>
+    </ContentPressable>
   );
 }
 
@@ -259,7 +263,7 @@ const styles = StyleSheet.create({
   filterLabel: { ...Typography.footnoteEmphasized, color: '#404040', textAlign: 'center' },
   inverse: { color: '#FFFFFF' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: cardGap },
-  card: { padding: 12, gap: 10 },
+  card: { flexGrow: 1, padding: 12, gap: 10 },
   portraitFrame: { aspectRatio: 4 / 5, borderRadius: 16, backgroundColor: '#EBEBEF', overflow: 'hidden' },
   portrait: { width: '100%', height: '100%' },
   availability: { position: 'absolute', top: 8, left: 8, flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 16, backgroundColor: '#262626', maxWidth: '90%' },
@@ -275,6 +279,7 @@ const styles = StyleSheet.create({
   cardFooter: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 6, paddingTop: 10, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: '#E5E5E5' },
   rating: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 3 },
   ratingLabel: { ...Typography.footnoteEmphasized, color: '#171717' },
+  cardIndicator: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   empty: { padding: 20, gap: 10, alignItems: 'center' },
   noticeDock: { position: 'absolute', bottom: 12, left: pagePadding, right: pagePadding, alignItems: 'center' },
   notice: { maxWidth: '100%', borderRadius: 18, paddingHorizontal: 16, paddingVertical: 10 },

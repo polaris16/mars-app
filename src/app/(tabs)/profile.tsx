@@ -44,6 +44,14 @@ export default function ProfileScreen() {
           <View style={styles.rowContent}><Text dynamicTypeRamp="headline" style={styles.rowTitle}>权益</Text><Text dynamicTypeRamp="subheadline" style={styles.description}>查看专属服务与权益</Text></View>
           <Ionicons name="chevron-forward" size={17} color="#616161" />
         </ContentPressable>
+        <ContentSurface style={[styles.row, styles.nextRow]}>
+          <View style={[styles.icon, { backgroundColor: accentBlueSubtle }]}>
+            <Ionicons name="calendar-outline" size={22} color={accentBlue} accessible={false} />
+          </View>
+          <View style={styles.rowContent}>
+            <Text dynamicTypeRamp="headline" style={styles.rowTitle}>我的预约</Text>
+          </View>
+        </ContentSurface>
         <ContentPressable accessibilityLabel="我的录音" onPress={() => router.push('/recorder/list')} surfaceStyle={styles.row} style={styles.nextRow}>
           <View style={[styles.icon, { backgroundColor: accentBlueSubtle }]}><Ionicons name="mic-outline" size={22} color={accentBlue} /></View>
           <View style={styles.rowContent}><Text dynamicTypeRamp="headline" style={styles.rowTitle}>我的录音</Text><Text dynamicTypeRamp="subheadline" style={styles.description}>查看和管理已完成的录音</Text></View>
