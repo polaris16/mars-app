@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomSheet, BottomSheetForm } from '@/components/bottom-sheet';
 import { ContentPressable, ContentSurface } from '@/components/content-surface';
+import { darkButtonDimmedStyle } from '@/components/dark-button';
 import { GlassBackToolbar } from '@/components/glass-back-toolbar';
 import { GlassScreen } from '@/components/glass-surface';
 import { companions, type Companion } from '@/constants/companions';
@@ -182,14 +183,14 @@ function BookingForm({ companion, onBack }: { companion: Companion; onBack: () =
       </ScrollView>
 
       <View style={styles.footer}>
-        <Text dynamicTypeRamp="caption1" style={styles.footerNote}>本页仅记录演示预约意向</Text>
         <ContentPressable
-          tone={selectedSlot ? 'dark' : 'muted'}
+          tone="dark"
           disabled={!selectedSlot}
           onPress={confirm}
+          style={!selectedSlot && darkButtonDimmedStyle}
           surfaceStyle={styles.confirmButton}
         >
-          <Text dynamicTypeRamp="headline" style={[styles.heading, selectedSlot ? styles.inverse : styles.captionColor]}>确定</Text>
+          <Text dynamicTypeRamp="headline" style={[styles.heading, styles.inverse]}>确定</Text>
         </ContentPressable>
       </View>
 
@@ -299,7 +300,6 @@ const styles = StyleSheet.create({
   noteInput: { ...Typography.body, minHeight: 90, padding: 0, textAlignVertical: 'top', color: '#171717' },
   addressInput: { backgroundColor: '#F5F5F5', borderRadius: 14, padding: 12 },
   counter: { ...Typography.caption1, color: '#616161', textAlign: 'right' },
-  footer: { paddingHorizontal: 16, paddingVertical: 8, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: '#E5E5E5', gap: 6 },
-  footerNote: { ...Typography.caption1, color: '#616161', textAlign: 'center' },
+  footer: { paddingHorizontal: 16, paddingVertical: 8, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: '#E5E5E5' },
   confirmButton: { minHeight: 48, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 24, justifyContent: 'center', alignItems: 'center' },
 });
