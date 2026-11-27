@@ -29,8 +29,27 @@ export interface RecordingAsset {
 
 export interface RecordingAttachment {
   id: number;
+  session_id?: number;
   asset?: RecordingAsset | null;
   [key: string]: unknown;
+}
+
+export interface AttachmentUploadAuthorizationItem {
+  client_file_id: string;
+  filename: string;
+  media_type: 'image' | 'video' | 'audio';
+  content_type: string;
+  size_bytes: number;
+}
+
+export interface AttachmentUploadAuthorization {
+  client_file_id: string;
+  status: string;
+  asset_id: number;
+  upload_url: string | null;
+  upload_method: 'PUT';
+  required_headers: Record<string, string>;
+  expires_at: string | null;
 }
 
 export interface RecordingFragment {

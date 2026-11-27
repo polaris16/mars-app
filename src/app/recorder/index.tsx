@@ -677,6 +677,7 @@ export default function RecordingPage() {
           recordingUri: recording.uri,
           duration: recording.duration,
           recordingId: recording.id,
+          sessionId: recordingSessionId ? String(recordingSessionId) : undefined,
         } : {}),
       },
     });

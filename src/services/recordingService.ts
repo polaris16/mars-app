@@ -8,11 +8,14 @@ import type {
   RecordingUploadAuthorizationRequest,
   RecordingUploadAuthorizationResponse,
   RecordingFragment,
+  RecordingAttachment,
+  AttachmentUploadAuthorization,
+  AttachmentUploadAuthorizationItem,
 } from '@/types/recording';
 import Constants from 'expo-constants';
 import { File } from 'expo-file-system';
 import { Platform } from 'react-native';
-import { get, post } from '@/utils';
+import { delete as deleteRequest, get, post } from '@/utils';
 
 interface LocalRecordingFile {
   filename: string;
@@ -152,6 +155,31 @@ export async function uploadRecordingToSession(input: {
 
 export function getRecordingSessionDetail(sessionId: number | string): Promise<RecordingSessionDetail> {
   return get<RecordingSessionDetail>(`/api/recording-sessions/${encodeURIComponent(String(sessionId))}`);
+}
+
+export function getRecordingAttachments(sessionId: number | string): Promise<RecordingAttachment[]> {
+  return get<RecordingAttachment[]>(`/api/recording-sessions/${encodeURIComponent(String(sessionId))}/attachments`);
+}
+
+export function requestAttachmentUploadAuthorizations(
+  sessionId: number | string,
+  items: AttachmentUploadAuthorizationItem[]
+): Promise<{ items: AttachmentUploadAuthorization[] }> {
+  return post(`/api/recording-sessions/${encodeURIComponent(String(sessionId))}/attachments/batch-upload-authorizations`, { items });
+}
+
+export function completeAndAttachRecordingAssets(
+  sessionId: number | string,
+  items: { client_file_id: string; asset_id: number }[]
+): Promise<unknown> {
+  return post(`/api/recording-sessions/${encodeURIComponent(String(sessionId))}/attachments/batch-complete-and-attach`, {
+    items,
+    duplicate_mode: 'ask',
+  });
+}
+
+export async function deleteRecordingAttachment(sessionId: number | string, attachmentId: number): Promise<void> {
+  await deleteRequest(`/api/recording-sessions/${encodeURIComponent(String(sessionId))}/attachments/${attachmentId}`);
 }
 
 export function createRecordingSession(payload: CreateRecordingSessionRequest): Promise<RecordingSession> {
