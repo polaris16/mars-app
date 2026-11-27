@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Keyboard, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -27,6 +27,14 @@ function BenefitsPage({ accountId }: { accountId: string }) {
   const [bindingLoaded, setBindingLoaded] = useState(false);
   const [showBinding, setShowBinding] = useState(false);
   const [notice, setNotice] = useState('');
+  const filterScrollRef = useRef<ScrollView>(null);
+
+  const filterPositions = useRef<
+    Record<string, { x: number; width: number }>
+  >({});
+
+  const filterContainerWidth = useRef(0);
+  const filterContentWidth = useRef(0);
 
   useEffect(() => {
     let active = true;
@@ -43,6 +51,42 @@ function BenefitsPage({ accountId }: { accountId: string }) {
   const closeBinding = () => {
     Keyboard.dismiss();
     setShowBinding(false);
+  };
+
+  const scrollToSelectedPlan = (planId: string, index: number) => {
+    requestAnimationFrame(() => {
+      const position = filterPositions.current[planId];
+      const containerWidth = filterContainerWidth.current;
+      const contentWidth = filterContentWidth.current;
+
+      if (!position || !containerWidth) return;
+
+      let targetX: number;
+
+      if (index === 0) {
+        // 第一项：滚动到最左侧
+        targetX = 0;
+      } else if (index === plans.length - 1) {
+        // 最后一项：滚动到最右侧
+        targetX = contentWidth - containerWidth;
+      } else {
+        // 中间项：滚动到屏幕中央
+        targetX =
+          position.x +
+          position.width / 2 -
+          containerWidth / 2;
+      }
+
+      targetX = Math.max(
+        0,
+        Math.min(targetX, contentWidth - containerWidth),
+      );
+
+      filterScrollRef.current?.scrollTo({
+        x: targetX,
+        animated: true,
+      });
+    });
   };
 
   const bindServiceCode = (code: string) => {
@@ -74,24 +118,60 @@ function BenefitsPage({ accountId }: { accountId: string }) {
           </View>
 
           <ScrollView style={styles.fill} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filters}>
-              {plans.map(plan => {
-                const active = plan.id === selected.id;
-                return (
-                  <Pressable
-                    key={plan.id}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: active }}
-                    accessibilityLabel={`${plan.institution}，${plan.benefits.length} 项权益`}
-                    onPress={() => { setSelectedId(plan.id); setNotice(''); }}
-                    style={({ pressed }) => [styles.filter, active && styles.filterActive, pressed && styles.pressed]}
+            <ScrollView
+            ref={filterScrollRef}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filters}
+            onLayout={event => {
+              filterContainerWidth.current = event.nativeEvent.layout.width;
+            }}
+            onContentSizeChange={width => {
+              filterContentWidth.current = width;
+            }}
+          >
+            {plans.map((plan, index) => {
+              const active = plan.id === selected.id;
+
+              return (
+                <Pressable
+                  key={plan.id}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                  accessibilityLabel={`${plan.institution}，${plan.benefits.length} 项权益`}
+                  onLayout={event => {
+                    const { x, width } = event.nativeEvent.layout;
+
+                    filterPositions.current[plan.id] = { x, width };
+                  }}
+                  onPress={() => {
+                    setSelectedId(plan.id);
+                    setNotice('');
+                    scrollToSelectedPlan(plan.id, index);
+                  }}
+                  style={({ pressed }) => [
+                    styles.filter,
+                    active && styles.filterActive,
+                    pressed && styles.pressed,
+                  ]}
+                >
+                  <Text
+                    dynamicTypeRamp="subheadline"
+                    style={[styles.actionLabel, active && styles.inverse]}
                   >
-                    <Text dynamicTypeRamp="subheadline" style={[styles.actionLabel, active && styles.inverse]}>{plan.institution}</Text>
-                    <Text dynamicTypeRamp="footnote" style={[styles.secondary, active && styles.inverse]}>{plan.benefits.length} 项</Text>
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
+                    {plan.institution}
+                  </Text>
+
+                  <Text
+                    dynamicTypeRamp="footnote"
+                    style={[styles.secondary, active && styles.inverse]}
+                  >
+                    {plan.benefits.length} 项
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
 
             {notice ? <Text accessibilityLiveRegion="polite" dynamicTypeRamp="subheadline" style={styles.notice}>{notice}</Text> : null}
 
